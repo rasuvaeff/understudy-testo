@@ -106,6 +106,12 @@ the `assertions` metric goes up by one and an "expectations verified" record
 is appended to the collected `TestState`. A verification failure is recorded
 there the same way and reported as the test's failure.
 
+A test whose only check is an understudy expectation is not risky. Testo calls
+a passing test risky when it recorded no assertion, and it decides that before
+this adapter can contribute the verification — so the adapter takes the verdict
+back when its own record is the only one in the history. Tests that also assert
+on their own keep whatever verdict they earned.
+
 One place it is not visible: the `assert-history` block Testo prints. The
 collector renders that text before returning, and this adapter runs outside
 the collector, so the record does not exist yet at rendering time. The count

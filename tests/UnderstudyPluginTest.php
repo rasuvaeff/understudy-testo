@@ -142,6 +142,104 @@ final class UnderstudyPluginTest
         Assert::null($result->failure);
     }
 
+    public function riskyBodyIsStillVerified(): void
+    {
+        // Testo calls a passing test risky when it recorded no assertion —
+        // which is exactly what a test whose only check is an expectation
+        // looks like. Skipping verification here let unmet expectations pass
+        // silently in the very tests that lean on them most.
+        $interceptor = new UnderstudyInterceptor();
+        $next = static function (TestInfo $info): TestResult {
+            $double = Understudy::for(CollectorContract::class);
+
+            expect(static fn() => $double->get());
+
+            return new TestResult(info: $info, status: Status::Risky);
+        };
+
+        $result = $interceptor->runTest($this->info(), $next);
+
+        Assert::same($result->status, Status::Failed);
+        Assert::instanceOf($result->failure, VerificationFailed::class);
+    }
+
+    public function flakyBodyIsStillVerified(): void
+    {
+        // A test that passed after retries ran its code just as much.
+        $interceptor = new UnderstudyInterceptor();
+        $next = static function (TestInfo $info): TestResult {
+            $double = Understudy::for(CollectorContract::class);
+
+            expect(static fn() => $double->get());
+
+            return new TestResult(info: $info, status: Status::Flaky);
+        };
+
+        $result = $interceptor->runTest($this->info(), $next);
+
+        Assert::same($result->status, Status::Failed);
+    }
+
+    public function flakyIsNeverPromotedToPassed(): void
+    {
+        // Only the `Risky` verdict is ours to take back. A test that needed
+        // retries stays flaky no matter how its expectations went — hiding
+        // that would misreport the suite.
+        $interceptor = new UnderstudyInterceptor();
+        $next = static function (TestInfo $info): TestResult {
+            $double = Understudy::for(CollectorContract::class);
+
+            expect(static fn() => $double->get());
+            $double->get();
+
+            return CollectedResult::with($info, assertions: 0)->with(Status::Flaky);
+        };
+
+        $result = $interceptor->runTest($this->info(), $next);
+
+        Assert::same($result->status, Status::Flaky);
+        Assert::same($result->summary->metric('assertions'), 1);
+    }
+
+    public function soleVerificationTakesBackTheRiskyVerdict(): void
+    {
+        $interceptor = new UnderstudyInterceptor();
+        $next = static function (TestInfo $info): TestResult {
+            $double = Understudy::for(CollectorContract::class);
+
+            expect(static fn() => $double->get());
+            $double->get();
+
+            return CollectedResult::with($info, assertions: 0)->with(Status::Risky);
+        };
+
+        $result = $interceptor->runTest($this->info(), $next);
+
+        // The test did assert — through understudy — so "no assertions" was
+        // never true of it.
+        Assert::same($result->status, Status::Passed);
+        Assert::same($result->summary->metric('assertions'), 1);
+    }
+
+    public function riskyVerdictSurvivesWhenTheTestAssertedOnItsOwn(): void
+    {
+        // Here the risk was declared for some reason of the test's own, and
+        // overruling it is none of this adapter's business.
+        $interceptor = new UnderstudyInterceptor();
+        $next = static function (TestInfo $info): TestResult {
+            $double = Understudy::for(CollectorContract::class);
+
+            expect(static fn() => $double->get());
+            $double->get();
+
+            return CollectedResult::with($info, assertions: 3)->with(Status::Risky);
+        };
+
+        $result = $interceptor->runTest($this->info(), $next);
+
+        Assert::same($result->status, Status::Risky);
+    }
+
     public function contextIsDroppedAfterEveryTest(): void
     {
         $interceptor = new UnderstudyInterceptor();

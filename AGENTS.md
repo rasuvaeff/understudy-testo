@@ -85,8 +85,23 @@ make release-check
   static state that carries it is `@psalm-internal Testo\Assert`, closed to
   adapters on purpose. If Testo ever moves the collector's order, ours moves
   with it.
-- **The lifecycle table (plan §6.7) is the contract.** Passed → verify;
-  failed/error/skipped → pass through untouched; always reset in `finally`.
+- **The lifecycle table (plan §6.7) is the contract.** A body that completed
+  (`Passed`, `Flaky`, `Risky`) → verify; failed/error/skipped → pass through
+  untouched; always reset in `finally`.
+- **`Risky` and `Flaky` are completed bodies, and forgetting that was a hole
+  you could drive a suite through.** Verifying only `Status::Passed` meant an
+  unmet `expect()` was never checked in exactly the tests that lean on
+  expectations hardest: a test whose only check IS an expectation records no
+  assertion of its own, so Testo calls it `Risky`, so the adapter skipped it,
+  so it went green. Found by dogfooding on `yii3-api-problem` (2026-08-24):
+  the suite passed with an expectation the middleware never fulfilled.
+- **The `Risky` verdict itself is ours to take back — narrowly.** Testo decides
+  it innermost, before the collected `TestState` reaches the result and hence
+  before we can contribute anything to it. When our record is the ONLY entry in
+  the history, "recorded no assertion" was false and we restore `Passed`. Any
+  other entry means the test asserted on its own and the risk was declared for
+  a reason of its own; leave it alone. `understudy-phpunit` has no equivalent
+  problem: `addToAssertionCount(1)` lands before PHPUnit's own verdict.
   A teardown error must never replace the test's original failure, and there
   is deliberately no branch where verification runs for a non-passing status.
 - **Verification failure becomes a normal assertion-style failure**: recorded

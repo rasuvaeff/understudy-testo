@@ -11,7 +11,8 @@ composer require --dev rasuvaeff/understudy-testo
 ## Rules
 
 - Register the plugin per suite in `testo.php`: `plugins: [new UnderstudyPlugin()]`.
-- After a PASSING test body the adapter calls `Understudy::verifyAll()`; an unmet `expect()` fails the test.
+- After a body that COMPLETED (`Passed`, `Flaky` or `Risky`) the adapter calls `Understudy::verifyAll()`; an unmet `expect()` fails the test.
+- A test whose only check is an understudy expectation is not left `Risky`: the adapter takes that verdict back when its record is the only one in the history.
 - After a FAILING/SKIPPED body nothing is verified — the original failure is never masked.
 - The context is reset after EVERY test (`finally`); doubles never leak between tests.
 - Verification adds exactly ONE to the `assertions` metric and appends one record to the collected `TestState`.

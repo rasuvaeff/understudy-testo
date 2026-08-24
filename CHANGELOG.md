@@ -15,6 +15,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   whole history size — a test with `N` assertions reported `2N + 1`.
 - The verification is counted even when the assert plugin is not part of the
   suite; only the history record needs the plugin.
+- Fixed: a body that finished `Risky` or `Flaky` was never verified. Since a
+  test whose only check is an expectation records no assertion of its own and
+  is therefore `Risky`, an unmet `expect()` passed silently in precisely the
+  tests built around expectations. All three completed statuses are verified.
+- A test whose sole check is an understudy expectation is no longer reported
+  `Risky`: the adapter takes that verdict back when its record is the only one
+  in the history.
 - Documented that the verification record does not appear in the printed
   `assert-history` block, and that `#[TestInline]` tests and benchmarks are
   outside the interceptor's scope.
