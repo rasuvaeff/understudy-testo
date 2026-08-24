@@ -1,0 +1,60 @@
+# understudy-testo
+
+Testo adapter for rasuvaeff/understudy (test double library: `when(fn () => $repo->find(123))->returns($book)`).
+
+## Install
+
+```bash
+composer require --dev rasuvaeff/understudy-testo
+```
+
+## Rules
+
+- Register the plugin per suite in `testo.php`: `plugins: [new UnderstudyPlugin()]`.
+- After a PASSING test body the adapter calls `Understudy::verifyAll()`; an unmet `expect()` fails the test.
+- After a FAILING/SKIPPED body nothing is verified — the original failure is never masked.
+- The context is reset after EVERY test (`finally`); doubles never leak between tests.
+- Verification is recorded as one assertion record and recounted into the `assertions` metric.
+- `new UnderstudyPlugin(strictStubs: true)` additionally fails tests with unused stubs. Default: false.
+- Fiber-local contexts come from core; the adapter adds no global state.
+
+## testo.php
+
+```php
+use Rasuvaeff\Understudy\Testo\UnderstudyPlugin;
+use Testo\Application\Config\ApplicationConfig;
+use Testo\Application\Config\SuiteConfig;
+
+return new ApplicationConfig(
+    src: ['src'],
+    suites: [
+        new SuiteConfig(name: 'Unit', location: ['tests'], plugins: [new UnderstudyPlugin()]),
+    ],
+);
+```
+
+## Typical test
+
+```php
+use function Rasuvaeff\Understudy\expect;
+use function Rasuvaeff\Understudy\when;
+use Rasuvaeff\Understudy\Understudy;
+
+$books = Understudy::for(BookRepository::class);
+when(static fn () => $books->find(7))->returns(new Book(7));
+
+$service->charge(cart: [7]);
+
+expect(static fn () => $books->find(7)); // exactly once, verified by the plugin
+```
+
+## API
+
+| Member | Kind | Purpose |
+|---|---|---|
+| `Rasuvaeff\Understudy\Testo\UnderstudyPlugin` | class | `PluginConfigurator`; constructor arg `bool $strictStubs = false` |
+| `Rasuvaeff\Understudy\Testo\UnderstudyInterceptor` | class | `TestRunInterceptor`: verify-after-success, reset-in-finally |
+
+All doubling operations live in the core package `rasuvaeff/understudy`
+(`Understudy::for/when/expect/verify/calls/verifySequence/nothingElse/allVerified/
+transcript/label/strict/forwarding/wire/defaults/bypassFinals/scope/checkpoint/reset`).
