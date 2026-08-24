@@ -24,9 +24,11 @@ use Testo\Pipeline\Middleware\TestRunInterceptor;
  * keeps its original outcome — verification would only mask it. Either way
  * the context is reset, so one test can never leak a double into the next.
  *
- * The verification itself is recorded as an assertion on the test's
- * {@see TestState}, so it shows up in the assertion count like any other
- * check.
+ * The verification itself is counted into the test's `assertions` metric and
+ * appended to the collected {@see TestState}, so it is visible to anything
+ * reading the result. It is absent from the rendered `assert-history` block:
+ * the collector renders that text before returning, and this interceptor is
+ * outer to it, so the record simply does not exist yet at rendering time.
  *
  * This interceptor sits just outside Testo's assert collector: that is where
  * the collected {@see TestState} is already attached to the result and can be
@@ -34,6 +36,13 @@ use Testo\Pipeline\Middleware\TestRunInterceptor;
  * internal to `Testo\Assert` and rightly closed to adapters.
  *
  * @api
+ */
+/*
+ * Scoped to plain tests. Inline tests (`#[TestInline]`) and benchmarks are
+ * deliberately out: a benchmark runs its body many times, so per-iteration
+ * verification would measure understudy rather than the code, and the inline
+ * path has never been exercised against this adapter. A double created in an
+ * inline test is therefore nobody's to reset — declare doubles in plain tests.
  */
 #[InterceptorOptions(
     order: InterceptorOptions::ORDER_ASSERTIONS - 100,
@@ -84,23 +93,26 @@ final readonly class UnderstudyInterceptor implements TestRunInterceptor
     }
 
     /**
-     * Appends the outcome of the verification to the collected assertion
-     * history and recounts the metric the collector has already written.
+     * Accounts the verification as one more assertion of the test.
+     *
+     * {@see \Testo\Core\Value\Summary::withAddedMetric()} adds to the metric
+     * rather than replacing it, and the collector has already counted its own
+     * history into it — so the increment here is exactly one. Passing the size
+     * of the history instead would report `2N + 1` assertions for a test that
+     * made `N`.
+     *
+     * The history itself exists only while the assert plugin is part of the
+     * suite. Without it verification still ran and is still counted; there is
+     * merely no history to append to.
      */
     private function record(TestResult $result, AssertionSuccess|AssertionException $record): TestResult
     {
         $state = $result->getAttribute(TestState::class);
 
-        if (!$state instanceof TestState) {
-            // The assert plugin is not part of this suite; verification still
-            // ran, there is just no history to account it in.
-            return $result;
+        if ($state instanceof TestState) {
+            $state->history[] = $record;
         }
 
-        $state->history[] = $record;
-
-        return $result->withSummary(
-            $result->summary->withAddedMetric('assertions', \count($state->history)),
-        );
+        return $result->withSummary($result->summary->withAddedMetric('assertions', 1));
     }
 }

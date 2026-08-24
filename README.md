@@ -101,10 +101,15 @@ setting.
 
 ## What gets recorded
 
-On a passing test the verification is accounted like any other check: one
-assertion record ("expectations verified") lands in the collected assertion
-history and the `assertions` metric is recounted. A verification failure is
-recorded there as well and reported as the test's failure.
+On a passing test the verification counts as one more assertion of the test:
+the `assertions` metric goes up by one and an "expectations verified" record
+is appended to the collected `TestState`. A verification failure is recorded
+there the same way and reported as the test's failure.
+
+One place it is not visible: the `assert-history` block Testo prints. The
+collector renders that text before returning, and this adapter runs outside
+the collector, so the record does not exist yet at rendering time. The count
+and the attached state carry it; the printed history does not.
 
 ## API
 

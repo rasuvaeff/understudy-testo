@@ -7,7 +7,9 @@ namespace Rasuvaeff\Understudy\Testo\Tests;
 use Internal\Container\ObjectContainer;
 use Internal\Path;
 use Rasuvaeff\Understudy\Exception\VerificationFailed;
+use Rasuvaeff\Understudy\Testo\Tests\Support\CollectedResult;
 use Rasuvaeff\Understudy\Testo\Tests\Support\CollectingCollector;
+use Rasuvaeff\Understudy\Testo\Tests\Support\CollectorContract;
 use Rasuvaeff\Understudy\Testo\UnderstudyInterceptor;
 use Rasuvaeff\Understudy\Testo\UnderstudyPlugin;
 use Rasuvaeff\Understudy\Understudy;
@@ -61,8 +63,7 @@ final class UnderstudyPluginTest
 
             $double->get();
 
-            return (new TestResult(info: $info, status: Status::Passed))
-                ->withAttribute(TestState::class, new TestState());
+            return CollectedResult::with($info, assertions: 3);
         };
 
         $result = $interceptor->runTest($this->info(), $next);
@@ -72,9 +73,11 @@ final class UnderstudyPluginTest
 
         $state = $result->getAttribute(TestState::class);
         Assert::instanceOf($state, TestState::class);
-        Assert::same(\count($state?->history ?? []), 1);
-        Assert::true($state?->history[0]->isSuccess());
-        Assert::same((int) ($result->summary->metrics['assertions'] ?? 0), 1);
+        Assert::same(\count($state?->history ?? []), 4);
+        Assert::true($state?->history[3]->isSuccess());
+        // Three assertions of the body plus this one — the metric is an
+        // increment, not the running total the collector already counted.
+        Assert::same($result->summary->metric('assertions'), 4);
     }
 
     public function unmetExpectationFailsAPassingTest(): void
@@ -85,8 +88,7 @@ final class UnderstudyPluginTest
 
             expect(static fn() => $double->get());
 
-            return (new TestResult(info: $info, status: Status::Passed))
-                ->withAttribute(TestState::class, new TestState());
+            return CollectedResult::with($info, assertions: 3);
         };
 
         $result = $interceptor->runTest($this->info(), $next);
@@ -100,9 +102,9 @@ final class UnderstudyPluginTest
 
         $state = $result->getAttribute(TestState::class);
         Assert::instanceOf($state, TestState::class);
-        Assert::same(\count($state?->history ?? []), 1);
-        Assert::false($state?->history[0]->isSuccess());
-        Assert::same((int) ($result->summary->metrics['assertions'] ?? 0), 1);
+        Assert::same(\count($state?->history ?? []), 4);
+        Assert::false($state?->history[3]->isSuccess());
+        Assert::same($result->summary->metric('assertions'), 4);
     }
 
     public function failingBodyKeepsItsOriginalFailure(): void
@@ -216,6 +218,9 @@ final class UnderstudyPluginTest
 
         Assert::same($result->status, Status::Failed);
         Assert::instanceOf($result->failure, VerificationFailed::class);
+        // No history to append to, but the verification is still a check the
+        // test performed.
+        Assert::same($result->summary->metric('assertions'), 1);
     }
 
     private function info(): TestInfo
@@ -231,9 +236,4 @@ final class UnderstudyPluginTest
             ),
         );
     }
-}
-
-interface CollectorContract
-{
-    public function get(): int;
 }

@@ -14,7 +14,9 @@ composer require --dev rasuvaeff/understudy-testo
 - After a PASSING test body the adapter calls `Understudy::verifyAll()`; an unmet `expect()` fails the test.
 - After a FAILING/SKIPPED body nothing is verified — the original failure is never masked.
 - The context is reset after EVERY test (`finally`); doubles never leak between tests.
-- Verification is recorded as one assertion record and recounted into the `assertions` metric.
+- Verification adds exactly ONE to the `assertions` metric and appends one record to the collected `TestState`.
+- That record is absent from the printed `assert-history` block: the collector renders it before this adapter runs.
+- Doubles must be created in plain tests: `#[TestInline]` tests and benchmarks are outside the interceptor's scope.
 - `new UnderstudyPlugin(strictStubs: true)` additionally fails tests with unused stubs. Default: false.
 - Fiber-local contexts come from core; the adapter adds no global state.
 

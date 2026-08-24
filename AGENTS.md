@@ -90,10 +90,29 @@ make release-check
   A teardown error must never replace the test's original failure, and there
   is deliberately no branch where verification runs for a non-passing status.
 - **Verification failure becomes a normal assertion-style failure**: recorded
-  into the collected history as an `AssertionException`, recounted into the
+  into the collected history as an `AssertionException`, counted into the
   `assertions` metric, returned as `Status::Failed` carrying the core's own
   `VerificationFailed`. Never throw past the pipeline — an interceptor
   exception aborts the whole test as `Status::Aborted`.
+- **`Summary::withAddedMetric()` ADDS, it does not set.** The collector has
+  already counted its own history into `assertions` by the time this adapter
+  sees the result, so the adapter contributes exactly `1`. Passing
+  `count($state->history)` there reports `2N + 1` assertions for a test that
+  made `N` — it shipped once and no unit test saw it, because the fixtures
+  handed the interceptor an empty history and a virgin summary. Fixtures now
+  come from `Tests\Support\CollectedResult`, which reproduces what the
+  collector really hands over; build new ones on it.
+- **The verification record never reaches the printed `assert-history`.** The
+  collector renders that text before returning and we are outer to it. The
+  record does live in the `TestState` attached to the result, and the metric
+  is right — but any doc claiming it shows up in the printed history is wrong.
+- **The interceptor is scoped to `TestType::Test`.** Benchmarks would pay
+  verification per iteration, and the inline path has never been exercised
+  against this adapter. Consequence to keep documented, not to paper over: a
+  double created inside a `#[TestInline]` test is never verified and never
+  reset. If that scope is ever widened, widen it with a fixture that actually
+  runs an inline test — the naive scratch setup aborts for reasons unrelated
+  to this adapter.
 - **A suite without the assert plugin must still work.** The result carries no
   `TestState` then; verification still runs, only the accounting is skipped.
   Do not "fix" this by requiring `Testo\Assert\TestState` to exist.
