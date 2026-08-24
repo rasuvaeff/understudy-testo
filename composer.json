@@ -26,7 +26,7 @@
         "php": "8.3 - 8.5",
         "rasuvaeff/understudy": "^0.1",
         "testo/assert": "^0.1.13",
-        "testo/testo": "^0.10.39 || ^1.0"
+        "testo/testo": "^0.10.39"
     },
     "require-dev": {
         "ergebnis/composer-normalize": "^2.51",

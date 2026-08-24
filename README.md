@@ -21,7 +21,7 @@ The plugin ends every test with understudy's own bookkeeping done for you:
 
 - PHP 8.3 – 8.5
 - `rasuvaeff/understudy` (`^0.1`)
-- `testo/testo` (`^0.10.39 || ^1.0`)
+- `testo/testo` (`^0.10.39`)
 
 ## Installation
 

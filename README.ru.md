@@ -21,7 +21,7 @@ Testo-адаптер для [rasuvaeff/understudy](https://github.com/rasuvaeff/
 
 - PHP 8.3 – 8.5
 - `rasuvaeff/understudy` (`^0.1`)
-- `testo/testo` (`^0.10.39 || ^1.0`)
+- `testo/testo` (`^0.10.39`)
 
 ## Установка
 
