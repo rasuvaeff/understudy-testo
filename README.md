@@ -137,8 +137,11 @@ documented there. This package adds no operations of its own.
 ## Fiber isolation
 
 Core runtime contexts are fiber-local, so tests that suspend fibers keep
-their doubles isolated, and `reset()` clears only the current context. The
-adapter does not copy or replace process state.
+their doubles isolated. Verification is deliberately wider: `verifyAll()` and
+`reset()` reach every context the test put doubles in, including one a
+`#[RunInFiber]` body owns — this interceptor never stands in that context, and
+before core spanned them an unmet `expect()` inside such a test passed
+silently. The adapter itself copies and replaces no process state.
 
 ## Examples
 

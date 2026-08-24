@@ -20,6 +20,7 @@ composer require --dev rasuvaeff/understudy-testo
 - Doubles must be created in plain tests: `#[TestInline]` tests and benchmarks are outside the interceptor's scope.
 - `new UnderstudyPlugin(strictStubs: true)` additionally fails tests with unused stubs. Default: false.
 - Fiber-local contexts come from core; the adapter adds no global state.
+- Verification spans every context the test used, so a `#[RunInFiber]` body's expectations are checked too.
 
 ## testo.php
 
