@@ -47,6 +47,7 @@
     },
     "autoload-dev": {
         "psr-4": {
+            "Rasuvaeff\\Understudy\\Testo\\Benchmarks\\": "benchmarks/",
             "Rasuvaeff\\Understudy\\Testo\\Tests\\": "tests/"
         }
     },
