@@ -22,10 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A test whose sole check is an understudy expectation is no longer reported
   `Risky`: the adapter takes that verdict back when its record is the only one
   in the history.
-- Narrowed `testo/testo` to `^0.10.39`. The previous `^0.10.39 || ^1.0`
+- Narrowed `testo/testo` to `^0.10.42` to match the minimum required by
+  `testo/assert ^0.1.13`. The previous `^0.10.39 || ^1.0`
   promised support for a major that does not exist on Packagist and cannot be
   tested; 1.x will be opened in a minor once Testo 1.0 ships and is exercised.
 - Documented that the verification record does not appear in the printed
   `assert-history` block, and that `#[TestInline]` tests and benchmarks are
   outside the interceptor's scope.
-

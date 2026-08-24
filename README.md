@@ -4,7 +4,8 @@ Testo adapter for [rasuvaeff/understudy](https://github.com/rasuvaeff/understudy
 a test double library where a configured call is a real call:
 `when(fn () => $repo->find(123))->returns($book)`.
 
-The plugin ends every test with understudy's own bookkeeping done for you:
+The plugin ends every plain Testo test with understudy's own bookkeeping done
+for you:
 
 - **verify after success** — after a passing body, every `expect()` is checked.
   An expectation the code under test never fulfilled turns the pass into a
@@ -14,6 +15,10 @@ The plugin ends every test with understudy's own bookkeeping done for you:
 - **reset always** — the context is dropped after every test, in `finally`.
   One test can never leak a double, an expectation or a stub into the next.
 
+`#[TestInline]` tests and benchmarks are intentionally outside the interceptor
+scope. Keep doubles in plain `#[Test]` tests; inline cases are meant to be pure,
+deterministic table-driven checks and are not verified or reset by this plugin.
+
 > Using an AI coding assistant? [llms.txt](llms.txt) is a compact API
 > reference it can load instead of guessing.
 
@@ -21,7 +26,7 @@ The plugin ends every test with understudy's own bookkeeping done for you:
 
 - PHP 8.3 – 8.5
 - `rasuvaeff/understudy` (`^0.1`)
-- `testo/testo` (`^0.10.39`)
+- `testo/testo` (`^0.10.42`)
 
 ## Installation
 
