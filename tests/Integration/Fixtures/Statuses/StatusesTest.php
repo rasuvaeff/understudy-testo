@@ -33,7 +33,7 @@ final class StatusesTest
      * decision the test made about itself with one about a call it never got
      * the chance to make.
      */
-    public function aSkippedBodyKeepsItsSkip(): void
+    public function aSkippedBodyKeepsItsSkip(): never
     {
         $gate = Understudy::for(Gate::class);
 
@@ -46,7 +46,7 @@ final class StatusesTest
      * An error keeps its own cause. The unmet expectation here is a
      * consequence of the throw, and reporting it would hide the throw.
      */
-    public function anErroringBodyKeepsItsError(): void
+    public function anErroringBodyKeepsItsError(): never
     {
         $gate = Understudy::for(Gate::class);
 
@@ -81,7 +81,7 @@ final class StatusesTest
 
         ++self::$attempts;
 
-        Assert::same(self::$attempts > 1, true);
+        Assert::same(self::$attempts > 1, expected: true);
     }
 
     /**
