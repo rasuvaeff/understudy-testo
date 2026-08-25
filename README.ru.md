@@ -157,6 +157,15 @@ fibers, держат свои дубли изолированно. Верифи�
 
 См. [`examples/`](examples/README.md).
 
+## Семейство understudy
+
+| Пакет | Что это |
+|---|---|
+| [rasuvaeff/understudy](https://github.com/rasuvaeff/understudy) | Движок: дубли, матчеры, ожидания, верификация. |
+| **rasuvaeff/understudy-testo** *(этот пакет)* | Testo-адаптер — верификация и сброс вокруг каждого теста. |
+| [rasuvaeff/understudy-phpunit](https://github.com/rasuvaeff/understudy-phpunit) | Адаптер для PHPUnit и Pest — то же самое, через трейт. |
+| [rasuvaeff/understudy-psalm](https://github.com/rasuvaeff/understudy-psalm) | Psalm-плагин — спецификации с матчерами и диагностики ошибок. |
+
 ## Разработка
 
 На хосте нет PHP/Composer — всё запускается через Docker:
