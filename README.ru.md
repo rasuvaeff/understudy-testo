@@ -165,6 +165,7 @@ fibers, держат свои дубли изолированно. Верифи�
 | **rasuvaeff/understudy-testo** *(этот пакет)* | Testo-адаптер — верификация и сброс вокруг каждого теста. |
 | [rasuvaeff/understudy-phpunit](https://github.com/rasuvaeff/understudy-phpunit) | Адаптер для PHPUnit и Pest — то же самое, через трейт. |
 | [rasuvaeff/understudy-psalm](https://github.com/rasuvaeff/understudy-psalm) | Psalm-плагин — спецификации с матчерами и диагностики ошибок. |
+| [rasuvaeff/understudy-phpstan](https://github.com/rasuvaeff/understudy-phpstan) | PHPStan-расширение — то же самое для PHPStan, плюс свои правила. |
 
 ## Разработка
 
