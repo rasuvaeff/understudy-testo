@@ -321,12 +321,35 @@ final class UnderstudyPluginTest
         Assert::same($result->summary->metric('assertions'), 1);
     }
 
-    private function info(): TestInfo
+    /**
+     * An inline test is reset but never verified. Verification would be about
+     * setup an inline case is not supposed to have; the reset is about the
+     * test after it, which is not inline and did not ask for a leftover.
+     */
+    public function anInlineTestIsResetButNotVerified(): void
+    {
+        $interceptor = new UnderstudyInterceptor();
+        $next = static function (TestInfo $info): TestResult {
+            $double = Understudy::for(CollectorContract::class);
+
+            expect(static fn() => $double->get());
+
+            return CollectedResult::with($info, assertions: 1);
+        };
+
+        $result = $interceptor->runTest($this->info(type: 'inline'), $next);
+
+        Assert::same($result->status, Status::Passed);
+        Assert::null($result->failure);
+        Assert::true(Understudy::idle());
+    }
+
+    private function info(string $type = 'test'): TestInfo
     {
         return new TestInfo(
             name: 'check',
             caseInfo: new CaseInfo(
-                definition: new CaseDefinition(name: 'Stub', type: 'test', file: Path::create(__FILE__)),
+                definition: new CaseDefinition(name: 'Stub', type: $type, file: Path::create(__FILE__)),
                 suiteIdentity: new SuiteIdentity('Unit'),
             ),
             testDefinition: new TestDefinition(

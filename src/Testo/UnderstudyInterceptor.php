@@ -19,11 +19,11 @@ use Testo\Pipeline\Middleware\TestRunInterceptor;
 /**
  * Ends every test with understudy's own bookkeeping done for it.
  *
- * After a body that finished on its own the context is verified: an `expect()`
- * the code under test never made turns the run into a failure. A failing or
- * skipped body keeps its original outcome — verification would only mask it.
- * Either way the context is reset, so one test can never leak a double into
- * the next.
+ * After a plain test that finished on its own the context is verified: an
+ * `expect()` the code under test never made turns the run into a failure. A
+ * failing or skipped body keeps its original outcome — verification would
+ * only mask it. Whatever the kind of test and whatever its outcome, the
+ * context is reset, so nothing can leak a double into the next test.
  *
  * The verification itself is counted into the test's `assertions` metric and
  * appended to the collected {@see TestState}, so it is visible to anything
@@ -39,16 +39,15 @@ use Testo\Pipeline\Middleware\TestRunInterceptor;
  * @api
  */
 /*
- * Scoped to plain tests. Inline tests (`#[TestInline]`) and benchmarks are
- * deliberately out: a benchmark runs its body many times, so per-iteration
- * verification would measure understudy rather than the code, and the inline
- * path has never been exercised against this adapter. A double created in an
- * inline test is therefore nobody's to reset — declare doubles in plain tests.
+ * Verification is for plain tests only: a benchmark runs its body many times,
+ * so verifying it would measure understudy rather than the code, and an
+ * inline test is meant to be a pure table-driven check with no setup to
+ * verify. Reset is for every kind of test, which is why this interceptor is
+ * not filtered by type. A double built inside an inline test used to survive
+ * into the next plain test's body — found by running one: the first dataset
+ * of the next test was handed a runtime that was not empty.
  */
-#[InterceptorOptions(
-    order: InterceptorOptions::ORDER_ASSERTIONS - 100,
-    testType: TestType::Test,
-)]
+#[InterceptorOptions(order: InterceptorOptions::ORDER_ASSERTIONS - 100)]
 final readonly class UnderstudyInterceptor implements TestRunInterceptor
 {
     /**
@@ -76,9 +75,10 @@ final readonly class UnderstudyInterceptor implements TestRunInterceptor
         try {
             $result = $next($info);
 
-            return \in_array($result->status, self::COMPLETED, strict: true)
-                ? $this->verify($result)
-                : $result;
+            return $info->identity->type === TestType::Test->value
+                && \in_array($result->status, self::COMPLETED, strict: true)
+                    ? $this->verify($result)
+                    : $result;
         } finally {
             Understudy::reset();
         }

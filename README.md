@@ -15,9 +15,12 @@ for you:
 - **reset always** — the context is dropped after every test, in `finally`.
   One test can never leak a double, an expectation or a stub into the next.
 
-`#[TestInline]` tests and benchmarks are intentionally outside the interceptor
-scope. Keep doubles in plain `#[Test]` tests; inline cases are meant to be pure,
-deterministic table-driven checks and are not verified or reset by this plugin.
+Verification is for plain `#[Test]` tests. `#[TestInline]` cases and benchmarks
+are not verified — an inline case is meant to be a pure, deterministic
+table-driven check with no setup to answer for, and a benchmark would pay for
+verification on every iteration. Keep doubles in plain tests. The reset is not
+scoped that way: whatever the kind of test, its doubles are dropped when it
+ends, so an inline case cannot hand a leftover to the test after it.
 
 > Using an AI coding assistant? [llms.txt](llms.txt) is a compact API
 > reference it can load instead of guessing.

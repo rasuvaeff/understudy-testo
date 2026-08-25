@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+- Fixed: a double created inside a `#[TestInline]` case leaked into the next
+  plain test. The interceptor was filtered by `InterceptorOptions(testType:)`,
+  which skipped the reset along with the verification; it now runs for every
+  kind of test and verifies only plain ones. Found by the `Seams` fixture, the
+  first thing in this package to run a real inline case.
+- Real-process fixtures for the runner seams this adapter had no coverage of:
+  every status a body reaches on its own (`Skipped`, `Error`, `Risky`,
+  `Flaky`, `Failed`, `Passed`), one runtime per dataset of a data provider,
+  one per repetition of `#[Repeat]`, a retried body whose verification failure
+  is what the retry policy acts on, and a filtered run.
 - Initial development: `UnderstudyPlugin` and `UnderstudyInterceptor` —
   verify-after-success, reset-in-`finally`, original-failure precedence,
   optional `strictStubs`.

@@ -45,18 +45,94 @@ final class UnderstudyTestoLifecycleIntegrationTest
     }
 
     /**
+     * Every status a body reaches on its own, in one run: the plan asks for
+     * the matrix to be produced by the runner rather than constructed,
+     * because a hand-built `Risky` is a belief about Testo and this is an
+     * observation of it.
+     */
+    public function everyStatusTheRunnerProducesIsHandledAsDocumented(): void
+    {
+        [$exit, $output] = $this->runFixture('Statuses');
+
+        Assert::same($exit, 1);
+        Assert::string($output)
+            ->contains('Total   6 tests · 11 assertions')
+            ->contains('1 passed, 1 failed, 1 error, 1 skipped, 1 risky, 1 flaky');
+
+        // The error keeps its own cause, and the unmet `open(2)` that the
+        // throw left behind is not reported over it.
+        Assert::string($output)->contains('RuntimeException: the original failure');
+        Assert::false(str_contains($output, 'open(2)'));
+
+        // The skipped body's expectation is not reported either.
+        Assert::false(str_contains($output, 'open(1)'));
+
+        // Verification is a verdict the retry policy acts on, exactly as it
+        // acts on an assertion's.
+        Assert::string($output)->contains(
+            'Attempt 1 failed: Understudy `Gate` expected `open(4)` to be called exactly 1 time',
+        );
+    }
+
+    /**
+     * The seams with the plugins that run a body more than once, or several
+     * bodies under one pipeline invocation. Each body asks whether the
+     * runtime it was handed is empty, which is the only question that catches
+     * a leak before it turns into a confusing verdict somewhere else.
+     */
+    public function everyPluginSeamHandsTheBodyAnEmptyRuntime(): void
+    {
+        [$exit, $output] = $this->runFixture('Seams');
+
+        Assert::same($exit, 1);
+        Assert::string($output)
+            // Three datasets, three repetitions counted as one test, one
+            // inline test and one plain test.
+            ->contains('Total   6 tests · 15 assertions')
+            ->contains('5 passed, 1 failed');
+
+        // The one failure is the dataset that forgot its call, and nothing
+        // spills onto the dataset after it.
+        Assert::string($output)
+            ->contains('Dataset #1 [forgotten]')
+            ->contains('expected `open(2)` to be called exactly 1 time');
+        Assert::false(str_contains($output, 'open(1)'));
+        Assert::false(str_contains($output, 'open(3)'));
+
+        // The inline test's own double is never verified — an unmet
+        // `open(99)` there is not a failure — and it does not survive into
+        // the plain tests either.
+        Assert::false(str_contains($output, 'open(99)'));
+    }
+
+    /**
+     * Filtering changes which tests run, not what happens around them.
+     */
+    public function aFilteredRunStillVerifies(): void
+    {
+        [$exit, $output] = $this->runFixture('Seams', '--filter=eachDatasetGetsItsOwnRuntime');
+
+        Assert::same($exit, 1);
+        Assert::string($output)
+            ->contains('Total   3 tests · 6 assertions')
+            ->contains('2 passed, 1 failed')
+            ->contains('expected `open(2)` to be called exactly 1 time');
+    }
+
+    /**
      * @return array{int, string}
      */
-    private function runFixture(string $fixture = 'RealProcess'): array
+    private function runFixture(string $fixture = 'RealProcess', string ...$arguments): array
     {
         $root = dirname(__DIR__, 2);
         $config = __DIR__ . '/Fixtures/' . $fixture . '/testo.php';
 
         $command = sprintf(
-            '%s %s --config=%s --no-ansi 2>&1',
+            '%s %s --config=%s --no-ansi %s 2>&1',
             escapeshellarg(PHP_BINARY),
             escapeshellarg($root . '/vendor/bin/testo'),
             escapeshellarg($config),
+            implode(' ', array_map(escapeshellarg(...), $arguments)),
         );
 
         exec($command, $lines, $exit);

@@ -121,13 +121,15 @@ make release-check
   collector renders that text before returning and we are outer to it. The
   record does live in the `TestState` attached to the result, and the metric
   is right — but any doc claiming it shows up in the printed history is wrong.
-- **The interceptor is scoped to `TestType::Test`.** Benchmarks would pay
-  verification per iteration, and the inline path has never been exercised
-  against this adapter. Consequence to keep documented, not to paper over: a
-  double created inside a `#[TestInline]` test is never verified and never
-  reset. If that scope is ever widened, widen it with a fixture that actually
-  runs an inline test — the naive scratch setup aborts for reasons unrelated
-  to this adapter.
+- **Verification is scoped to plain tests; the reset is not.** Benchmarks
+  would pay verification per iteration and an inline case has no setup to
+  answer for, so neither is verified — but both drop their doubles when they
+  end. The scope used to be an `InterceptorOptions(testType:)` filter, which
+  also skipped the reset: a double built in a `#[TestInline]` case survived
+  into the next plain test's body, and the first dataset of the test after it
+  was handed a runtime that was not empty. The type is now read from
+  `$info->identity->type` inside `runTest()`. Any change here needs the
+  `Seams` fixture, which runs a real inline case followed by real tests.
 - **A suite without the assert plugin must still work.** The result carries no
   `TestState` then; verification still runs, only the accounting is skipped.
   Do not "fix" this by requiring `Testo\Assert\TestState` to exist.

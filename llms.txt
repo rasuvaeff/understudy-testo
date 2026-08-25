@@ -17,7 +17,8 @@ composer require --dev rasuvaeff/understudy-testo
 - The context is reset after EVERY test (`finally`); doubles never leak between tests.
 - Verification adds exactly ONE to the `assertions` metric and appends one record to the collected `TestState`.
 - That record is absent from the printed `assert-history` block: the collector renders it before this adapter runs.
-- Doubles must be created in plain tests: `#[TestInline]` tests and benchmarks are outside the interceptor's scope.
+- Doubles must be created in plain tests: `#[TestInline]` cases and benchmarks are never VERIFIED (nothing there is checked at the end).
+- The RESET is unscoped: a double created in an inline case or a benchmark is dropped when it ends, so it cannot leak into the next test.
 - `new UnderstudyPlugin(strictStubs: true)` additionally fails tests with unused stubs. Default: false.
 - Fiber-local contexts come from core; the adapter adds no global state.
 - Verification spans every context the test used, so a `#[RunInFiber]` body's expectations are checked too.
