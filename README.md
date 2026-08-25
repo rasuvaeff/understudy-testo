@@ -1,5 +1,14 @@
 # rasuvaeff/understudy-testo
 
+[![Latest Stable Version](https://poser.pugx.org/rasuvaeff/understudy-testo/v)](https://packagist.org/packages/rasuvaeff/understudy-testo)
+[![Total Downloads](https://poser.pugx.org/rasuvaeff/understudy-testo/downloads)](https://packagist.org/packages/rasuvaeff/understudy-testo)
+[![Build](https://github.com/rasuvaeff/understudy-testo/actions/workflows/build.yml/badge.svg)](https://github.com/rasuvaeff/understudy-testo/actions/workflows/build.yml)
+[![Static analysis](https://github.com/rasuvaeff/understudy-testo/actions/workflows/static-analysis.yml/badge.svg)](https://github.com/rasuvaeff/understudy-testo/actions/workflows/static-analysis.yml)
+[![Psalm level](https://img.shields.io/badge/psalm-level_1-blue.svg)](https://github.com/rasuvaeff/understudy-testo/actions/workflows/static-analysis.yml)
+[![PHP](https://img.shields.io/packagist/dependency-v/rasuvaeff/understudy-testo/php)](https://packagist.org/packages/rasuvaeff/understudy-testo)
+[![License](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](LICENSE.md)
+[Русская версия](README.ru.md)
+
 Testo adapter for [rasuvaeff/understudy](https://github.com/rasuvaeff/understudy) —
 a test double library where a configured call is a real call:
 `when(fn () => $repo->find(123))->returns($book)`.

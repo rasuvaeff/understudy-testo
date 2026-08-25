@@ -34,24 +34,6 @@ adapter lifecycle contract).
 
 No PHP/Composer on the host — run in Docker via the `composer:2` image.
 
-The core package (`rasuvaeff/understudy`) has no release yet, so during
-development it resolves through a temporary path repository. Run from the
-monorepo root, with the whole root mounted so the sibling package is visible:
-
-```bash
-docker run --rm -v "$PWD":/repo -w /repo/understudy-testo composer:2 sh -c '
-    git config --global --add safe.directory /repo
-    composer config repositories.core "{\"type\":\"path\",\"url\":\"../understudy\",\"options\":{\"versions\":{\"rasuvaeff/understudy\":\"0.1.0\"}}}"
-    composer update
-    composer config --unset repositories.core
-    rm composer.lock
-'
-```
-
-Never commit that `repositories` key or a `composer.lock`.
-
-Otherwise, as usual:
-
 ```bash
 docker run --rm -v "$PWD":/app -w /app composer:2 composer build
 docker run --rm -v "$PWD":/app -w /app composer:2 composer cs:fix

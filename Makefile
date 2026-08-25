@@ -1,25 +1,12 @@
-# rasuvaeff/understudy is not released yet: it resolves through a path
-# repository, so vendor/rasuvaeff/understudy is a symlink pointing OUT of this
-# directory. Mounting the package alone leaves that symlink dangling inside the
-# container and every command dies in the autoloader. Mount the monorepo root
-# and work from the package subdirectory instead. When the core is tagged and
-# installs from Packagist, this collapses back to the template's `-v "$(PWD)":/app`.
-ROOT := $(realpath $(CURDIR)/..)
-PKG := $(notdir $(CURDIR))
-DOCKER := docker run --rm -v "$(ROOT)":/repo -w /repo/$(PKG) composer:2
-DOCKER_HOST := docker run --rm --network host -v "$(ROOT)":/repo -w /repo/$(PKG)
+DOCKER := docker run --rm -v "$(PWD)":/app -w /app composer:2
+DOCKER_HOST := docker run --rm --network host -v "$(PWD)":/app -w /app
 PCOV_BOOTSTRAP := apk add --no-cache $$PHPIZE_DEPS >/dev/null && pecl install pcov >/dev/null && docker-php-ext-enable pcov
 
 .PHONY: bench build cs cs-fix psalm test mutation rector rector-fix install normalize require-checker \
        test-coverage test-coverage-ci update-deps release-check bc-check audit-package help
 
 install:
-	@# The path repository is set only for the duration of the install and then
-	@# removed again: composer.json must stay release-ready, and a stray
-	@# `repositories` entry would ship with the tag.
-	$(DOCKER) sh -lc 'composer config repositories.understudy path ../understudy; \
-	  composer install --no-interaction --no-progress; status=$$?; \
-	  composer config --unset repositories.understudy; exit $$status'
+	$(DOCKER) composer install --no-interaction --no-progress --prefer-dist
 
 bench:
 	$(DOCKER) composer bench
