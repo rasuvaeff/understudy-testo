@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+- **The release workflow waits for the matrix build instead of judging it
+  mid-flight.** A tag pushed right after the merge arrived while master's own
+  build was still running, and the guard read a `null` conclusion as a failed
+  one, refusing to create the GitHub Release. Hit for real on the core package
+  while tagging `v0.1.1`. No effect on the package itself.
+
 ## 0.1.0 — 2026-08-25
 
 - Fixed: a double created inside a `#[TestInline]` case leaked into the next
