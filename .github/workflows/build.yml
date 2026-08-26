@@ -21,6 +21,7 @@ jobs:
     outputs:
       run: ${{ steps.filter.outputs.run }}
       mutation: ${{ steps.filter.outputs.mutation }}
+      smoke: ${{ steps.filter.outputs.smoke }}
 
     steps:
       - name: Checkout
@@ -44,6 +45,7 @@ jobs:
             # one reads as false downstream and silently skips its job.
             echo "run=true" >> "$GITHUB_OUTPUT"
             echo "mutation=true" >> "$GITHUB_OUTPUT"
+            echo "smoke=true" >> "$GITHUB_OUTPUT"
             exit 0
           else
             BASE="$BEFORE_SHA"
@@ -70,6 +72,19 @@ jobs:
             echo "mutation=false" >> "$GITHUB_OUTPUT"
           else
             echo "mutation=true" >> "$GITHUB_OUTPUT"
+          fi
+
+          # The consumer smoke installs a dist archive of this commit into a
+          # throwaway project, so what it can see changing is the distributed
+          # tree itself: the code, the manifest, what it ships and the
+          # export-ignore list that decides what leaves the repository. Tests
+          # and analysis configs never reach a consumer.
+          if git diff --quiet "$BASE" "$GITHUB_SHA" -- \
+            src composer.json .gitattributes \
+            .github/workflows/build.yml; then
+            echo "smoke=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "smoke=true" >> "$GITHUB_OUTPUT"
           fi
 
   # Not gated on 'changes' like the other jobs below: when a matrix job's own
@@ -150,6 +165,44 @@ jobs:
 
       - name: Build
         run: composer build
+
+  consumer-smoke:
+    name: Consumer smoke
+    needs: changes
+    if: ${{ !cancelled() && (needs.changes.result != 'success' || needs.changes.outputs.smoke == 'true') }}
+    runs-on: ubuntu-latest
+
+    # Every other job runs this package inside its own checkout, with its dev
+    # dependencies present and its autoloader rooted here. None of that
+    # survives a `composer require`. This one installs a dist archive of the
+    # commit into a throwaway project — `export-ignore` applied, the engine
+    # taken from Packagist the way a user gets it — and exercises the runner adapter under a real `vendor/bin/testo` run.
+    #
+    # The script comes from the core repository because there is exactly one
+    # copy of it and this repository is not where it lives. The core PACKAGE
+    # still comes from Packagist: `--no-checkout core` says so.
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+          # `git archive HEAD` needs the commit, and the version the path
+          # repository claims falls back to the latest tag when the CHANGELOG
+          # heading is still Unreleased.
+          fetch-depth: 0
+          path: package
+
+      - name: Checkout the family consumer smoke
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          repository: rasuvaeff/understudy
+          persist-credentials: false
+          path: core
+
+      - name: Install this package from a dist archive and use it
+        run: |
+          core/bin/consumer-smoke --only=testo --no-checkout core \
+            --checkout testo="$GITHUB_WORKSPACE/package"
 
   coverage:
     name: Coverage & Mutation
