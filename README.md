@@ -37,7 +37,7 @@ ends, so an inline case cannot hand a leftover to the test after it.
 ## Requirements
 
 - PHP 8.3 – 8.5
-- `rasuvaeff/understudy` (`^0.1`)
+- `rasuvaeff/understudy` (`^0.1 || ^0.2 || ^0.3`)
 - `testo/testo` (`^0.10.42`)
 
 ## Installation
@@ -109,12 +109,12 @@ Two rules the engine enforces, easy to miss when coming from Mockery:
   after it is declared — an expectation armed after the subject ran counts
   zero and fails as "called never". A call that has already happened is
   claimed retrospectively by `verify()`, or read from `Understudy::calls()`.
-- **One expectation per call.** A `when()` stub and an `expect()` on the same
-  call do not compose: whichever was declared later takes the dispatch, and
-  the earlier one loses its purpose — a later `expect()` suppresses the
-  stub's value, a later `when()` starves the expectation's count. To answer a
-  value and claim how often it happens in one place, put `->returns()` on the
-  `expect()` itself, or `->times()` on the `when()`.
+- **One expectation per call.** A `when()` stub and an `expect()` naming the
+  exact same call do not compose, and the engine from 0.3.0 refuses the second
+  registration outright with `ConflictingExpectation` — on older engines the
+  pair degraded silently (the later declaration took the dispatch and the
+  earlier one lost its purpose). Either way the idiom is the same: put
+  `->returns()` on the `expect()` itself, or `->times()` on the `when()`.
 
 ### Strict stubs
 
