@@ -77,7 +77,6 @@ declare(strict_types=1);
 namespace App\Tests;
 
 use function Rasuvaeff\Understudy\expect;
-use function Rasuvaeff\Understudy\when;
 
 use App\Contract\BookRepository;
 use Rasuvaeff\Understudy\Understudy;
@@ -90,19 +89,31 @@ final class CheckoutTest
     public function chargesForTheCart(): void
     {
         $books = Understudy::for(BookRepository::class);
-        when(static fn() => $books->find(7))->returns($expected = new Book(7));
+        expect(static fn() => $books->find(7))->returns($expected = new Book(7)); // ровно один раз — проверено за вас
 
         $service = new Checkout($books);
         $receipt = $service->charge(cart: [7]);
 
         Assert::same($receipt->total, $expected->price);
-        expect(static fn() => $books->find(7)); // ровно один раз — проверено за вас
     }
 }
 ```
 
 Если сервис так и не вызвал `find(7)`, тест падает после тела — с отчётом о
 невыполненном ожидании, а не с молчаливым «зелёным».
+
+Два правила движка, которые легко упустить при переходе с Mockery:
+
+- **Армировать до прогона.** `expect()` считает только вызовы, пришедшие после
+  его объявления — ожидание, поставленное после запуска кода под тестом,
+  насчитает ноль и упадёт как «called never». Про вызов, который уже
+  произошёл, ретроспективно отчитываются `verify()` или `Understudy::calls()`.
+- **Одно ожидание на вызов.** Стаб `when()` и `expect()` на одном и том же
+  вызове не сочетаются: диспатч забирает объявленное позже, а раннее теряет
+  свой смысл — поздний `expect()` глушит значение стаба, поздний `when()`
+  оставляет ожидание без счёта. Чтобы задать значение и потребовать частоту
+  в одном месте, вешайте `->returns()` на сам `expect()` или `->times()` на
+  `when()`.
 
 ### Strict stubs
 

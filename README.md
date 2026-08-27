@@ -78,7 +78,6 @@ declare(strict_types=1);
 namespace App\Tests;
 
 use function Rasuvaeff\Understudy\expect;
-use function Rasuvaeff\Understudy\when;
 
 use App\Contract\BookRepository;
 use Rasuvaeff\Understudy\Understudy;
@@ -91,19 +90,31 @@ final class CheckoutTest
     public function chargesForTheCart(): void
     {
         $books = Understudy::for(BookRepository::class);
-        when(static fn() => $books->find(7))->returns($expected = new Book(7));
+        expect(static fn() => $books->find(7))->returns($expected = new Book(7)); // exactly once — verified for you
 
         $service = new Checkout($books);
         $receipt = $service->charge(cart: [7]);
 
         Assert::same($receipt->total, $expected->price);
-        expect(static fn() => $books->find(7)); // exactly once — verified for you
     }
 }
 ```
 
 If the service never calls `find(7)`, the test fails after its body — with an
 unmet-expectation report naming the call, not with a silent green.
+
+Two rules the engine enforces, easy to miss when coming from Mockery:
+
+- **Arm before the run.** An `expect()` counts only the calls that arrive
+  after it is declared — an expectation armed after the subject ran counts
+  zero and fails as "called never". A call that has already happened is
+  claimed retrospectively by `verify()`, or read from `Understudy::calls()`.
+- **One expectation per call.** A `when()` stub and an `expect()` on the same
+  call do not compose: whichever was declared later takes the dispatch, and
+  the earlier one loses its purpose — a later `expect()` suppresses the
+  stub's value, a later `when()` starves the expectation's count. To answer a
+  value and claim how often it happens in one place, put `->returns()` on the
+  `expect()` itself, or `->times()` on the `when()`.
 
 ### Strict stubs
 

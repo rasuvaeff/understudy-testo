@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+- Fix the README/README.ru/llms.txt example: it armed `expect()` after the code under test ran, but an expectation counts only calls that arrive after arming — as written it would fail with "called never". The example now uses `expect(...)->returns(...)` (value and exactly-once in one expectation) declared before the run, and both READMEs document the two engine rules: arm `expect()` before the run (`verify()` is the retrospective tool), and never combine `when()` with `expect()` on the same call — the later declaration takes the dispatch and the earlier one loses its purpose. Found while dogfooding on `rasuvaeff/circuit-breaker` (#6).
+
 ## 0.1.1 — 2026-08-27
 
 - Accept `rasuvaeff/understudy` 0.2 alongside 0.1. Nothing in the adapter
