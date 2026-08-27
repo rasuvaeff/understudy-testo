@@ -5,7 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 0.1.1 — 2026-08-27
+
+- Accept `rasuvaeff/understudy` 0.2 alongside 0.1. Nothing in the adapter
+  changes; the core's 0.2.0 is additive, and on 0.x Composer's caret treats a
+  minor as a boundary, so the constraint has to say so explicitly. Widening it
+  breaks no existing install.
 
 - **The release workflow waits for the matrix build instead of judging it
   mid-flight.** A tag pushed right after the merge arrived while master's own
