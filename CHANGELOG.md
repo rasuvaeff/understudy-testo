@@ -1,18 +1,16 @@
 # Changelog
 
-## Unreleased
-
-- Allow `rasuvaeff/understudy` `^0.3`: the engine now refuses a `when()` and
-  an `expect()` naming the exact same call with `ConflictingExpectation`
-  (rasuvaeff/understudy#59); the README rule about one expectation per call
-  now points at that refusal instead of describing the silent degradation.
-
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 0.1.2 — 2026-08-27
+
+- Allow `rasuvaeff/understudy` `^0.3`: the engine now refuses a `when()` and
+  an `expect()` naming the exact same call with `ConflictingExpectation`
+  (rasuvaeff/understudy#59); the README rule about one expectation per call
+  now points at that refusal instead of describing the silent degradation.
 
 - Fix the README/README.ru/llms.txt example: it armed `expect()` after the code under test ran, but an expectation counts only calls that arrive after arming — as written it would fail with "called never". The example now uses `expect(...)->returns(...)` (value and exactly-once in one expectation) declared before the run, and both READMEs document the two engine rules: arm `expect()` before the run (`verify()` is the retrospective tool), and never combine `when()` with `expect()` on the same call — the later declaration takes the dispatch and the earlier one loses its purpose. Found while dogfooding on `rasuvaeff/circuit-breaker` (#6).
 
