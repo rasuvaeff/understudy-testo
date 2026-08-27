@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Allow `rasuvaeff/understudy` `^0.3`: the engine now refuses a `when()` and
+  an `expect()` naming the exact same call with `ConflictingExpectation`
+  (rasuvaeff/understudy#59); the README rule about one expectation per call
+  now points at that refusal instead of describing the silent degradation.
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),

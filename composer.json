@@ -24,7 +24,7 @@
     },
     "require": {
         "php": "8.3 - 8.5",
-        "rasuvaeff/understudy": "^0.1 || ^0.2",
+        "rasuvaeff/understudy": "^0.1 || ^0.2 || ^0.3",
         "testo/assert": "^0.1.13",
         "testo/testo": "^0.10.42"
     },
