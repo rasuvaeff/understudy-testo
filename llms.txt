@@ -11,6 +11,8 @@ composer require --dev rasuvaeff/understudy-testo
 ## Rules
 
 - Register the plugin per suite in `testo.php`: `plugins: [new UnderstudyPlugin()]`.
+- `expect()` is ARMED BEFORE the run: it counts only calls that arrive after it is declared. A call that already happened is claimed retrospectively by `verify()` / read via `Understudy::calls()`.
+- One expectation per call: `when()` and `expect()` on the same call do not compose (the later declaration takes the dispatch). Value + cardinality in one place: `expect(fn)->returns($v)` or `when(fn)->returns($v)->times(n)`.
 - After a body that COMPLETED (`Passed`, `Flaky` or `Risky`) the adapter calls `Understudy::verifyAll()`; an unmet `expect()` fails the test.
 - A test whose only check is an understudy expectation is not left `Risky`: the adapter takes that verdict back when its record is the only one in the history.
 - After a FAILING/SKIPPED body nothing is verified — the original failure is never masked.
@@ -42,15 +44,12 @@ return new ApplicationConfig(
 
 ```php
 use function Rasuvaeff\Understudy\expect;
-use function Rasuvaeff\Understudy\when;
 use Rasuvaeff\Understudy\Understudy;
 
 $books = Understudy::for(BookRepository::class);
-when(static fn () => $books->find(7))->returns(new Book(7));
+expect(static fn () => $books->find(7))->returns(new Book(7)); // exactly once, verified by the plugin
 
 $service->charge(cart: [7]);
-
-expect(static fn () => $books->find(7)); // exactly once, verified by the plugin
 ```
 
 ## API
