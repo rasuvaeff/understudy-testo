@@ -24,6 +24,17 @@ for you:
 - **reset always** — the context is dropped after every test, in `finally`.
   One test can never leak a double, an expectation or a stub into the next.
 
+**The reset runs after your `#[AfterTest]` teardown.** The interceptor's
+`finally` sits outside the lifecycle interceptor, and the call log retains
+every returned value until that reset — so a value a double returned is still
+referenced while your teardown runs. For a value that owns an OS resource — a
+stream, a connection, a lock — the resource is still held: a forwarding double
+that returned real file streams made teardown's directory removal fail with
+"Directory not empty", on Windows only, because POSIX unlinks open files.
+Build such a double lean (`Understudy::lean($double)` keeps calls, not
+returned values; understudy 0.4+), or build and use it inside
+`Understudy::scope()`, which drops the context before teardown.
+
 Verification is for plain `#[Test]` tests. `#[TestInline]` cases and benchmarks
 are not verified — an inline case is meant to be a pure, deterministic
 table-driven check with no setup to answer for, and a benchmark would pay for
