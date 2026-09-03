@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The Requirements section of both READMEs said `rasuvaeff/understudy`
   `^0.1 || ^0.2 || ^0.3` while `composer.json` has allowed `^0.4` since 0.1.3,
   and the usage examples already use 0.4 idioms.
+- Allow `rasuvaeff/understudy` `^0.5`. The core release narrows what a
+  closing `scope()` verifies and refuses two impossible matcher
+  configurations — both changes to the consumer's own test code, neither
+  reaching this adapter, which needs no code change.
 
 ## 0.1.3 — 2026-08-28
 
