@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+- The Requirements section of both READMEs said `rasuvaeff/understudy`
+  `^0.1 || ^0.2 || ^0.3` while `composer.json` has allowed `^0.4` since 0.1.3,
+  and the usage examples already use 0.4 idioms.
+
 ## 0.1.3 — 2026-08-28
 
 - Allow `rasuvaeff/understudy` `^0.4`: `Arg::rest()`, `Arg::captor()`,
