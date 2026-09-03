@@ -5,8 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 0.2.0 — 2026-09-03
 
+A minor rather than a patch: the floor on `rasuvaeff/understudy` moves to
+`^0.5`, which Composer's caret already treats as breaking on 0.x.
+
+- **Requires `rasuvaeff/understudy` `^0.5`.** The wide range this package
+  carried was worth keeping while it needed nothing newer; it now does. The
+  fixture below states a claim that is only true of core 0.5.0, and against an
+  older engine it would either assert the opposite or have to be skipped —
+  which is a claim verified nowhere near the floor. Nobody is stranded:
+  0.1.4 works against every core from 0.1 to 0.5 and carries the same adapter.
 - An integration fixture pins scope isolation from this side of the boundary:
   an enclosing expectation left open, a complete nested `Understudy::scope()`,
   and the enclosing call after it. The interceptor asks the global
