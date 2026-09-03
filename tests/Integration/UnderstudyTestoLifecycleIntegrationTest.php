@@ -45,6 +45,36 @@ final class UnderstudyTestoLifecycleIntegrationTest
     }
 
     /**
+     * A nested scope answers for its own context, under a real runner.
+     *
+     * The engine's suite calls `scope()` from a plain function. Here the
+     * interceptor stands where it actually stands — a teardown position asking
+     * the global `Understudy::verifyAll()` — which is the shape the defect took
+     * in practice: a scope reached for inside a test to drop doubles holding OS
+     * resources, over a test whose own expectations are still open. Against
+     * core 0.4.x the first body of the fixture fails; against 0.5.0 it passes.
+     */
+    public function aNestedScopeDoesNotAnswerForTheTestsOwnPendingClaim(): void
+    {
+        [$exit, $output] = $this->runFixture('ScopeIsolation');
+
+        // Three bodies: the isolation claim passes, the idle check after it
+        // passes, and the one that leaves its OWN claim unmet errors out of
+        // the scope — the failure surfaces through the runner rather than
+        // being swallowed, and it names the inner call, not the outer one.
+        Assert::same($exit, 1);
+        Assert::string($output)
+            ->contains('Total   3 tests · 4 assertions')
+            ->contains('2 passed, 1 error')
+            ->contains('aScopeDoesNotAnswerForTheTestsOwnPendingClaim')
+            ->contains('expected `open(3)` to be called exactly 1 time');
+
+        // `open(1)` is the enclosing claim, open while the scope closed and
+        // satisfied afterwards. A report about it would be the regression.
+        Assert::false(str_contains($output, 'open(1)'));
+    }
+
+    /**
      * Every status a body reaches on its own, in one run: the plan asks for
      * the matrix to be produced by the runner rather than constructed,
      * because a hand-built `Risky` is a belief about Testo and this is an
