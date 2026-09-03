@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+- An integration fixture pins scope isolation from this side of the boundary:
+  an enclosing expectation left open, a complete nested `Understudy::scope()`,
+  and the enclosing call after it. The interceptor asks the global
+  `Understudy::verifyAll()` from a teardown position, which is the shape the
+  defect fixed in core 0.5.0 took in practice, and nothing here could see it
+  until core 0.5.0 was installable. (#14)
+
 ## 0.1.4 — 2026-09-03
 
 - The Requirements section of both READMEs said `rasuvaeff/understudy`
