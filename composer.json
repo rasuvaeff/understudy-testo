@@ -29,6 +29,7 @@
         "testo/testo": "^0.10.42"
     },
     "require-dev": {
+        "composer-runtime-api": "^2.2",
         "ergebnis/composer-normalize": "^2.51",
         "friendsofphp/php-cs-fixer": "^3.95",
         "infection/infection": "^0.33",

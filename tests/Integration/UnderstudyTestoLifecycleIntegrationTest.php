@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Rasuvaeff\Understudy\Testo\Tests\Integration;
 
+use Composer\InstalledVersions;
 use Testo\Assert;
 use Testo\Codecov\CoversNothing;
+use Testo\Core\Exception\SkipTest;
 use Testo\Test;
 
 /**
@@ -56,6 +58,20 @@ final class UnderstudyTestoLifecycleIntegrationTest
      */
     public function aNestedScopeDoesNotAnswerForTheTestsOwnPendingClaim(): void
     {
+        // The claim belongs to core 0.5.0. This package supports every core
+        // from 0.1 on purpose — it needs nothing newer — and on the older ones
+        // a closing scope really did answer for the whole test, so the fixture
+        // would be asserting that an old engine behaves like a new one. The
+        // `Prefer lowest` job installs exactly that engine, which is how this
+        // skip earns its place rather than hiding a failure.
+        $core = ltrim(InstalledVersions::getPrettyVersion('rasuvaeff/understudy') ?? '', 'v');
+
+        // A branch install answers `dev-something`, which is not a version to
+        // compare: treat anything unparseable as new rather than skip on it.
+        if (preg_match('/^\d+\.\d+/', $core) === 1 && version_compare($core, '0.5.0', '<')) {
+            throw new SkipTest('scope isolation is a claim about rasuvaeff/understudy 0.5.0, and ' . $core . ' is installed');
+        }
+
         [$exit, $output] = $this->runFixture('ScopeIsolation');
 
         // Three bodies: the isolation claim passes, the idle check after it
