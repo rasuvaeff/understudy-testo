@@ -23,6 +23,8 @@ use Testo\Core\Context\TestResult;
 use Testo\Core\Definition\CaseDefinition;
 use Testo\Core\Definition\TestDefinition;
 use Testo\Core\Value\Status;
+use Testo\Core\Value\TestType;
+use Testo\Data\DataProvider;
 use Testo\Lifecycle\BeforeTest;
 use Testo\Pipeline\InterceptorCollector;
 use Testo\Test;
@@ -266,6 +268,63 @@ final class UnderstudyPluginTest
 
         Assert::same($first->status, Status::Failed);
         Assert::same($second->status, Status::Passed);
+    }
+
+    /**
+     * Verification is scoped to plain tests; the reset is not.
+     *
+     * A benchmark would pay verification per iteration, and an inline case
+     * has no setup to answer for — so neither is verified. Both still drop
+     * their doubles, because a body that skips verification must not leak
+     * into the one after it. That half is the one that actually broke once:
+     * the scope used to be an `InterceptorOptions(testType:)` filter, which
+     * skipped the reset too, and a `#[TestInline]` double survived into the
+     * next plain test.
+     *
+     * `$info->identity->type` is where the decision is read, so this is the
+     * test that reads it — a real `#[Bench]` fixture would be measuring
+     * Testo's benchmark runner instead.
+     */
+    #[DataProvider('unverifiedTypeProvider')]
+    public function aTypeThatIsNotAPlainTestIsResetButNotVerified(string $type): void
+    {
+        $interceptor = new UnderstudyInterceptor();
+
+        $leaving = static function (TestInfo $info): TestResult {
+            $double = Understudy::for(CollectorContract::class);
+
+            expect(static fn() => $double->get());
+
+            return new TestResult(info: $info, status: Status::Passed);
+        };
+
+        // Not verified: the unmet expectation is not this body's problem.
+        $unverified = $interceptor->runTest($this->info($type), $leaving);
+
+        Assert::same($unverified->status, Status::Passed);
+
+        // Reset anyway: had the context survived, the plain test after it
+        // would inherit an expectation nothing fulfils and fail for it.
+        $plain = static fn(TestInfo $info): TestResult => new TestResult(info: $info, status: Status::Passed);
+        $next = $interceptor->runTest($this->info(), $plain);
+
+        Assert::same($next->status, Status::Passed);
+    }
+
+    /**
+     * Every type Testo has that is not a plain test, by value rather than by
+     * name — the interceptor compares `identity->type` against
+     * `TestType::Test->value`, so a type added to the enum lands here.
+     *
+     * @return iterable<string, array{string}>
+     */
+    public static function unverifiedTypeProvider(): iterable
+    {
+        foreach (TestType::cases() as $type) {
+            if ($type !== TestType::Test) {
+                yield $type->name => [$type->value];
+            }
+        }
     }
 
     public function strictStubsFlagReachesTheVerification(): void

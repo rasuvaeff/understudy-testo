@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+- The claim that a benchmark is reset but never verified is a test now.
+  `AGENTS.md` stated it and nothing checked it — and it is the half that has
+  broken before: the scope used to be an `InterceptorOptions(testType:)`
+  filter, which skipped the reset too, so a `#[TestInline]` double survived
+  into the next plain test. The test drives `runTest()` with each
+  `TestType` that is not a plain test, which is where the decision is read;
+  a real `#[Bench]` fixture would be measuring Testo's benchmark runner
+  instead of this adapter.
+- `examples/lifecycle.php` is part of `composer build`, and its checks throw
+  instead of using `assert()` — which is compiled out under
+  `zend.assertions=-1`, so the example silently stopped checking anything.
+  The sibling `understudy-phpunit` already worked this way.
+- The `Seams` fixture's data provider follows the `<method>Provider`
+  convention, and every fixture carries `@internal` — some did, some did not.
+
 ## 0.2.1 — 2026-09-04
 
 - Allow `rasuvaeff/understudy` `^0.6`. Widened rather than raised: the adapter

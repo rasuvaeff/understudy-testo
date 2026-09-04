@@ -18,6 +18,7 @@ use function Rasuvaeff\Understudy\expect;
 use function Rasuvaeff\Understudy\when;
 
 require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/_check.php';
 
 /**
  * Demonstrates the adapter lifecycle on a simulated pipeline: each scenario is
@@ -66,7 +67,7 @@ $second = $run(static function (TestInfo $info): TestResult {
     return new TestResult(info: $info, status: Status::Passed);
 });
 
-assert($second->failure !== null);
+check($second->failure !== null, 'an unmet expectation fails a passing body');
 printf(
     "2) passed body, expectation unmet      -> %s\n   %s\n",
     $second->status->name,
@@ -82,7 +83,7 @@ $third = $run(static function (TestInfo $info): TestResult {
     return new TestResult(info: $info, status: Status::Failed, failure: new RuntimeException('cart is empty'));
 });
 
-assert($third->failure !== null);
+check($third->failure !== null, 'a failing body keeps its own failure');
 printf(
     "3) failing body keeps its failure      -> %s (%s)\n",
     $third->status->name,

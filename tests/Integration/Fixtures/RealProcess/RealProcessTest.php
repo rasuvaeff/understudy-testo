@@ -10,6 +10,9 @@ use Testo\Test;
 use function Rasuvaeff\Understudy\expect;
 
 #[Test]
+/**
+ * @internal
+ */
 final class RealProcessTest
 {
     public function expectationOnlyTestIsCounted(): void
