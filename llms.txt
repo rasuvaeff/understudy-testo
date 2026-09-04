@@ -1,4 +1,4 @@
-# understudy-testo
+# rasuvaeff/understudy-testo
 
 Testo adapter for rasuvaeff/understudy (test double library: `when(fn () => $repo->find(123))->returns($book)`).
 
