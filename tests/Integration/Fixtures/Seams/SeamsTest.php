@@ -29,7 +29,7 @@ final class SeamsTest
      * Each dataset is a run of its own: one unmet expectation must fail its
      * own dataset and no other.
      */
-    #[DataProvider('gates')]
+    #[DataProvider('eachDatasetGetsItsOwnRuntimeProvider')]
     public function eachDatasetGetsItsOwnRuntime(int $code, bool $call): void
     {
         Assert::true(Understudy::idle());
@@ -46,7 +46,7 @@ final class SeamsTest
     /**
      * @return iterable<string, array{int, bool}>
      */
-    public static function gates(): iterable
+    public static function eachDatasetGetsItsOwnRuntimeProvider(): iterable
     {
         yield 'called' => [1, true];
         yield 'forgotten' => [2, false];

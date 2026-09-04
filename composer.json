@@ -72,10 +72,14 @@
             "@cs",
             "@psalm",
             "@test",
-            "@test:integration"
+            "@test:integration",
+            "@examples"
         ],
         "cs": "php-cs-fixer fix --dry-run --diff --config=.php-cs-fixer.php",
         "cs:fix": "php-cs-fixer fix --diff --config=.php-cs-fixer.php",
+        "examples": [
+            "@php examples/lifecycle.php > /dev/null"
+        ],
         "mutation": "infection --threads=max",
         "psalm": "psalm --no-cache",
         "rector": "rector process --dry-run",
