@@ -14,9 +14,9 @@ done for the user. It ships exactly two classes:
   reset-in-`finally`, original-failure precedence.
 
 Everything algorithmic — doubles, expectations, matchers, verification — lives
-in the core package; do not fix engine behaviour from here. The design and its
-milestones live in the monorepo at `_plans/UNDERSTUDY-PLAN.md` (§6.7 is the
-adapter lifecycle contract).
+in the core package; do not fix engine behaviour from here. The design plan
+was retired from the monorepo once the adapter shipped; what it decided lives
+in this file, the READMEs and the lifecycle table below.
 
 ## Golden rules
 
@@ -27,7 +27,7 @@ adapter lifecycle contract).
    belongs to the core facade; the interceptor may only call
    `Understudy::verifyAll()` and `Understudy::reset()`, read nothing internal,
    and keep no mutable fields. A change that grows either list is a design
-   decision to be made in the plan first.
+   decision to be made in the core package first.
 4. **Preserve the public contract.** Update README + tests with any API change.
 
 ## Commands
@@ -67,7 +67,7 @@ make release-check
   static state that carries it is `@psalm-internal Testo\Assert`, closed to
   adapters on purpose. If Testo ever moves the collector's order, ours moves
   with it.
-- **The lifecycle table (plan §6.7) is the contract.** A body that completed
+- **The lifecycle table is the contract.** A body that completed
   (`Passed`, `Flaky`, `Risky`) → verify; failed/error/skipped → pass through
   untouched; always reset in `finally`.
 - **`Risky` and `Flaky` are completed bodies, and forgetting that was a hole

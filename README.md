@@ -50,6 +50,7 @@ ends, so an inline case cannot hand a leftover to the test after it.
 - PHP 8.3 – 8.5
 - `rasuvaeff/understudy` ^0.5 || ^0.6 || ^0.7
 - `testo/testo` (`^0.10.42`)
+- `testo/assert` (`^0.1.13`)
 
 ## Installation
 
@@ -176,6 +177,12 @@ their doubles isolated. Verification is deliberately wider: `verifyAll()` and
 `#[RunInFiber]` body owns — this interceptor never stands in that context, and
 before core spanned them an unmet `expect()` inside such a test passed
 silently. The adapter itself copies and replaces no process state.
+
+## Security
+
+The adapter registers a test interceptor and, at the end of each test, calls
+the engine's `verifyAll()` and `reset()`. It executes no code beyond what the
+test itself runs and writes nothing.
 
 ## Examples
 
