@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+- **The runner's "this test made no assertion" check is no longer disabled for
+  the whole suite.** Verification recorded a success for every completed test
+  and added an assertion to it, after which the narrow rule that takes back a
+  `Risky` verdict — "our record is the only one in the history" — held for
+  tests that had never touched understudy. Installing this adapter for one
+  clear place of verification silently cost the project a runner check across
+  every test, including ones written before the adapter. A test that created no
+  double is now left alone entirely.
+- Both READMEs and `llms.txt` stop pointing at `Understudy::strict($double)` as
+  the per-double form of strict stubs. It is strict *dispatch* — "fail on any
+  call no expectation matched" — and says nothing about a stub that was
+  configured and never called; the per-double equivalent is
+  `when(…)->times(n)`.
+- Both READMEs and `llms.txt` say that verification runs **after** your teardown
+  here and **before** it under `understudy-phpunit`, so a test whose expectation
+  is fulfilled by teardown itself passes in one runner and fails in the other.
+- `llms.txt` mentions that `UnderstudyInterceptor` takes the same `strictStubs`
+  argument as `UnderstudyPlugin`.
+
 ## 0.2.3 — 2026-09-04
 
 - **Documentation review fixes.** Both READMEs gained the missing Security

@@ -22,6 +22,12 @@ composer require --dev rasuvaeff/understudy-testo
 - Doubles must be created in plain tests: `#[TestInline]` cases and benchmarks are never VERIFIED (nothing there is checked at the end).
 - The RESET is unscoped: a double created in an inline case or a benchmark is dropped when it ends, so it cannot leak into the next test.
 - `new UnderstudyPlugin(strictStubs: true)` additionally fails tests with unused stubs. Default: false.
+  There is NO per-double form: `Understudy::strict($double)` is strict DISPATCH ("fail on any call no
+  expectation matched"), not strict stubs. The per-double equivalent is `when(...)->times(n)`.
+- A test that created no double is left alone: nothing is recorded for it, its assertion count is its
+  own, and a `Risky` verdict of the runner's stands.
+- Verification runs AFTER your teardown here and BEFORE it under `-phpunit`
+  (`assertPostConditions()` precedes `tearDown()`). `reset()` is after teardown in both.
 - Fiber-local contexts come from core; the adapter adds no global state.
 - Verification spans every context the test used, so a `#[RunInFiber]` body's expectations are checked too.
 
@@ -57,7 +63,7 @@ $service->charge(cart: [7]);
 | Member | Kind | Purpose |
 |---|---|---|
 | `Rasuvaeff\Understudy\Testo\UnderstudyPlugin` | class | `PluginConfigurator`; constructor arg `bool $strictStubs = false` |
-| `Rasuvaeff\Understudy\Testo\UnderstudyInterceptor` | class | `TestRunInterceptor`: verify-after-success, reset-in-finally |
+| `Rasuvaeff\Understudy\Testo\UnderstudyInterceptor` | class | `TestRunInterceptor`: verify-after-success, reset-in-finally. Takes the same `bool $strictStubs = false` as the plugin |
 
 All doubling operations live in the core package `rasuvaeff/understudy`
 (`Understudy::for/when/expect/verify/calls/verifySequence/nothingElse/allVerified/

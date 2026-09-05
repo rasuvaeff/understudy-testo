@@ -144,6 +144,39 @@ final class UnderstudyPluginTest
         Assert::null($result->failure);
     }
 
+    /**
+     * A test that created no double is none of this adapter's business.
+     *
+     * The verification recorded a success for every completed test and added
+     * an assertion to it, which made `clearRiskOfNotAsserting()` fire for
+     * tests that never touched understudy — so installing the adapter for one
+     * clear place of verification silently took the runner's "this test made
+     * no assertion" check away from the whole suite, tests written before the
+     * adapter included.
+     */
+    public function aTestWithoutDoublesKeepsItsRiskyVerdictAndItsAssertionCount(): void
+    {
+        $interceptor = new UnderstudyInterceptor();
+        $next = static fn(TestInfo $info): TestResult => CollectedResult::with($info, assertions: 0)
+            ->with(Status::Risky);
+
+        $result = $interceptor->runTest($this->info(), $next);
+
+        Assert::same($result->status, Status::Risky);
+        Assert::same($result->summary->metric('assertions'), 0);
+    }
+
+    public function aPassingTestWithoutDoublesGainsNoAssertion(): void
+    {
+        $interceptor = new UnderstudyInterceptor();
+        $next = static fn(TestInfo $info): TestResult => CollectedResult::with($info, assertions: 3);
+
+        $result = $interceptor->runTest($this->info(), $next);
+
+        Assert::same($result->status, Status::Passed);
+        Assert::same($result->summary->metric('assertions'), 3);
+    }
+
     public function riskyBodyIsStillVerified(): void
     {
         // Testo calls a passing test risky when it recorded no assertion —
