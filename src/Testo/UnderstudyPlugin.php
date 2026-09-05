@@ -32,6 +32,9 @@ final readonly class UnderstudyPlugin implements PluginConfigurator
         private bool $strictStubs = false,
     ) {}
 
+    /**
+     * Registers the Understudy interceptor with Testo's interceptor collector.
+     */
     #[\Override]
     public function configure(Container $container): void
     {

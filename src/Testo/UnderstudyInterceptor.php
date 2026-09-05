@@ -67,6 +67,8 @@ final readonly class UnderstudyInterceptor implements TestRunInterceptor
     ) {}
 
     /**
+     * Runs a Testo test and verifies any understudy expectations it created.
+     *
      * @param callable(TestInfo): TestResult $next
      */
     #[\Override]
