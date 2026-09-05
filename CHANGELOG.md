@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.3.1 — 2026-09-05
+
+- Allows `rasuvaeff/understudy` `^0.8 || ^1.0`. The one union this package
+  will carry: it bridges the engine's 1.0 release, so that a project on the
+  engine's 1.0 can keep this adapter without a window in which `composer
+  require` silently installs the 0.8 engine beside it. It is narrowed to
+  `^1.0` in the release that follows the engine's — this package stays on
+  0.x until Testo itself reaches 1.0, because `UnderstudyPlugin` implements a
+  Testo interface whose signature names an `Internal\` class.
+- `infection/infection` moves to `^0.35`, the monorepo's single-major form.
+- Both READMEs and `llms.txt` stop dating engine behaviour («understudy 0.4+»
+  beside `lean()`, «the engine from 0.3.0 refuses»): with a floor of `^0.8`
+  every engine this adapter installs beside behaves that way.
+
 ## 0.3.0 — 2026-09-05
 
 - Requires `rasuvaeff/understudy` `^0.8`, and requires it as a single term. The
