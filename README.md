@@ -48,7 +48,7 @@ ends, so an inline case cannot hand a leftover to the test after it.
 ## Requirements
 
 - PHP 8.3 – 8.5
-- `rasuvaeff/understudy` ^0.8 || ^1.0
+- `rasuvaeff/understudy` ^0.8 || ^0.9
 - `testo/testo` (`^0.10.42`)
 - `testo/assert` (`^0.1.13`)
 
