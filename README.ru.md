@@ -47,7 +47,7 @@ inline-кейс не может передать остаток следующе
 ## Требования
 
 - PHP 8.3 – 8.5
-- `rasuvaeff/understudy` ^0.5 || ^0.6 || ^0.7
+- `rasuvaeff/understudy` ^0.8
 - `testo/testo` (`^0.10.42`)
 - `testo/assert` (`^0.1.13`)
 
