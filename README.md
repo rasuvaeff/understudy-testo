@@ -32,7 +32,7 @@ stream, a connection, a lock — the resource is still held: a forwarding double
 that returned real file streams made teardown's directory removal fail with
 "Directory not empty", on Windows only, because POSIX unlinks open files.
 Build such a double lean (`Understudy::lean($double)` keeps calls, not
-returned values; understudy 0.4+), or build and use it inside
+returned values), or build and use it inside
 `Understudy::scope()`, which drops the context before teardown.
 
 Verification is for plain `#[Test]` tests. `#[TestInline]` cases and benchmarks
@@ -48,7 +48,7 @@ ends, so an inline case cannot hand a leftover to the test after it.
 ## Requirements
 
 - PHP 8.3 – 8.5
-- `rasuvaeff/understudy` ^0.8
+- `rasuvaeff/understudy` ^0.8 || ^0.9
 - `testo/testo` (`^0.10.42`)
 - `testo/assert` (`^0.1.13`)
 
@@ -122,10 +122,9 @@ Two rules the engine enforces, easy to miss when coming from Mockery:
   zero and fails as "called never". A call that has already happened is
   claimed retrospectively by `verify()`, or read from `Understudy::calls()`.
 - **One expectation per call.** A `when()` stub and an `expect()` naming the
-  exact same call do not compose, and the engine from 0.3.0 refuses the second
-  registration outright with `ConflictingExpectation` — on older engines the
-  pair degraded silently (the later declaration took the dispatch and the
-  earlier one lost its purpose). Either way the idiom is the same: put
+  exact same call do not compose, and the engine refuses the second
+  registration outright with `ConflictingExpectation` — whichever came later
+  would take the dispatch and silently void the other. The idiom: put
   `->returns()` on the `expect()` itself, or `->times()` on the `when()`.
 
 ### Strict stubs

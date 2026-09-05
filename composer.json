@@ -24,14 +24,14 @@
     },
     "require": {
         "php": "8.3 - 8.5",
-        "rasuvaeff/understudy": "^0.8",
+        "rasuvaeff/understudy": "^0.8 || ^0.9",
         "testo/assert": "^0.1.13",
         "testo/testo": "^0.10.42"
     },
     "require-dev": {
         "ergebnis/composer-normalize": "^2.51",
         "friendsofphp/php-cs-fixer": "^3.95",
-        "infection/infection": "^0.33",
+        "infection/infection": "^0.35",
         "internal/path": "^1.2",
         "maglnet/composer-require-checker": "^4.17",
         "rasuvaeff/rector-named-literals": "^1.0",
