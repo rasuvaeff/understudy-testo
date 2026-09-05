@@ -135,9 +135,11 @@ new UnderstudyPlugin(strictStubs: true)
 ```
 
 A stub configured but never called fails its test too — the Mockito reading of
-"why did you configure it, then?". Off by default; strictness per double is
-available from the core as `Understudy::strict($double)` regardless of this
-setting.
+"why did you configure it, then?". Off by default, and there is no per-double
+form of it: `Understudy::strict($double)` is strict **dispatch** — "fail on any
+call no expectation matched" — and says nothing about a stub that was
+configured and never called. The per-double equivalent of strict stubs is
+`when(…)->times(n)`, which fails when the count is not met.
 
 ## What gets recorded
 
@@ -150,7 +152,16 @@ A test whose only check is an understudy expectation is not risky. Testo calls
 a passing test risky when it recorded no assertion, and it decides that before
 this adapter can contribute the verification — so the adapter takes the verdict
 back when its own record is the only one in the history. Tests that also assert
-on their own keep whatever verdict they earned.
+on their own keep whatever verdict they earned, and **a test that created no
+double is not touched at all**: nothing is recorded for it, its assertion count
+is its own, and the runner's verdict stands.
+
+**Verification runs after your teardown here, and before it under PHPUnit.**
+This adapter verifies in the interceptor, outside `#[AfterTest]`; the PHPUnit
+trait verifies in `assertPostConditions()`, which the runner calls *before*
+`tearDown()`. Neither is wrong, but a test whose expectation is fulfilled by
+teardown itself passes here and fails there. `reset()` runs after teardown in
+both.
 
 One place it is not visible: the `assert-history` block Testo prints. The
 collector renders that text before returning, and this adapter runs outside

@@ -37,8 +37,10 @@ final class UnderstudyTestoLifecycleIntegrationTest
         // still passes, and the context was dropped before the next test.
         Assert::same($exit, 1);
         Assert::string($output)
-            // Three bodies asserting once each, plus one verification apiece.
-            ->contains('Total   3 tests · 6 assertions')
+            // Three bodies asserting once each, plus a verification for the
+            // two that hold doubles. The third only asks `idle()`, so this
+            // adapter records nothing for it.
+            ->contains('Total   3 tests · 5 assertions')
             ->contains('2 passed, 1 failed')
             ->contains('anUnmetExpectationInsideAFiberMustFail')
             ->contains('never');
@@ -64,7 +66,9 @@ final class UnderstudyTestoLifecycleIntegrationTest
         // being swallowed, and it names the inner call, not the outer one.
         Assert::same($exit, 1);
         Assert::string($output)
-            ->contains('Total   3 tests · 4 assertions')
+            // One assertion per body, plus a verification for the bodies that
+            // hold doubles — the idle check holds none.
+            ->contains('Total   3 tests · 3 assertions')
             ->contains('2 passed, 1 error')
             ->contains('aScopeDoesNotAnswerForTheTestsOwnPendingClaim')
             ->contains('expected `open(3)` to be called exactly 1 time');
@@ -86,7 +90,7 @@ final class UnderstudyTestoLifecycleIntegrationTest
 
         Assert::same($exit, 1);
         Assert::string($output)
-            ->contains('Total   6 tests · 11 assertions')
+            ->contains('Total   6 tests · 10 assertions')
             ->contains('1 passed, 1 failed, 1 error, 1 skipped, 1 risky, 1 flaky');
 
         // The error keeps its own cause, and the unmet `open(2)` that the
@@ -117,8 +121,9 @@ final class UnderstudyTestoLifecycleIntegrationTest
         Assert::same($exit, 1);
         Assert::string($output)
             // Three datasets, three repetitions counted as one test, one
-            // inline test and one plain test.
-            ->contains('Total   6 tests · 15 assertions')
+            // inline test and one plain test — and a verification counted only
+            // for the bodies that held doubles.
+            ->contains('Total   6 tests · 14 assertions')
             ->contains('5 passed, 1 failed');
 
         // The one failure is the dataset that forgot its call, and nothing

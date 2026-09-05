@@ -86,6 +86,17 @@ final readonly class UnderstudyInterceptor implements TestRunInterceptor
 
     private function verify(TestResult $result): TestResult
     {
+        // A test that created no double asked understudy nothing, and there is
+        // nothing here to report about it. Recording a success anyway added an
+        // assertion to every test in the suite and, through
+        // clearRiskOfNotAsserting(), took back the runner's "this test made no
+        // assertion" verdict for tests that never touched this adapter —
+        // silently disabling a check of the runner across the whole suite in
+        // exchange for installing an adapter.
+        if (Understudy::idle()) {
+            return $result;
+        }
+
         try {
             Understudy::verifyAll($this->strictStubs);
         } catch (VerificationFailed $failure) {
@@ -115,10 +126,13 @@ final readonly class UnderstudyInterceptor implements TestRunInterceptor
      * that moment, and the blame is simply wrong: it did check something, and
      * the check passed.
      *
-     * Narrow on purpose. Our record has to be the only one in the history: any
-     * other entry means the test asserted on its own and the risk was declared
-     * for a reason of its own — a stale `#[ExpectNoAssertions]`, say — which is
-     * none of our business to overrule.
+     * Narrow on purpose, twice over. Our record has to be the only one in the
+     * history: any other entry means the test asserted on its own and the risk
+     * was declared for a reason of its own — a stale `#[ExpectNoAssertions]`,
+     * say — which is none of our business to overrule. And the caller only
+     * reaches here for a test that actually held doubles: without that guard
+     * the condition held for every test in the suite, including ones written
+     * before this adapter existed.
      */
     private function clearRiskOfNotAsserting(TestResult $result): TestResult
     {
