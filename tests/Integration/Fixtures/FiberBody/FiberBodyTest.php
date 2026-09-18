@@ -38,7 +38,7 @@ final class FiberBodyTest
     {
         $gate = Understudy::for(Gate::class);
 
-        expect(static fn() => $gate->open(7))->returns(true);
+        expect(static fn() => $gate->open(7));
         $gate->open(7);
 
         Assert::true(actual: true);
