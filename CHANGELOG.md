@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.3.5 — 2026-09-19
+
+- **Changed.** Accepts `rasuvaeff/understudy` `^0.12` alongside `^0.9 || ^0.10 || ^0.11`: the engine's 0.12.0 runs a specification closure exactly once (the nested-call probe that re-ran it is gone) and refuses two calls side by side as it does a nested pair; this package reads neither, so the bridge is widened, not moved.
+
 ## 0.3.4 — 2026-09-18
 
 - **Changed.** Accepts `rasuvaeff/understudy` `^0.11` alongside `^0.9 || ^0.10`: the engine's 0.11.0 adds a refusal where there was a fatal, a nested-call check and a `returns()` type check, none of which this package reads; the bridge is widened, not moved. The `returns()` check found one in this package's own Fiber fixture — `returns(true)` on a `: void` gate — which is now the plain `expect()` it meant.
