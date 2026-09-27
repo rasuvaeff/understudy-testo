@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.0.0 — 2026-09-27
+
+The stability release, following `rasuvaeff/understudy` 1.0.0. The adapter's
+public surface is unchanged from 0.3.5; a project on the 0.x bridge upgrades
+by changing its engine constraint to `^1.0`.
+
+- Requires `rasuvaeff/understudy` `^1.0`, following the family policy: the
+  engine is released first and satellites follow it on the same major.
+
 ## 0.3.5 — 2026-09-19
 
 - **Changed.** Accepts `rasuvaeff/understudy` `^0.12` alongside `^0.9 || ^0.10 || ^0.11`: the engine's 0.12.0 runs a specification closure exactly once (the nested-call probe that re-ran it is gone) and refuses two calls side by side as it does a nested pair; this package reads neither, so the bridge is widened, not moved.

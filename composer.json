@@ -25,7 +25,7 @@
     "require": {
         "php": "8.3 - 8.5",
         "internal/container": "^1.0",
-        "rasuvaeff/understudy": "^0.9 || ^0.10 || ^0.11 || ^0.12",
+        "rasuvaeff/understudy": "^1.0",
         "testo/assert": "^0.1.13",
         "testo/testo": "^0.10.42"
     },
