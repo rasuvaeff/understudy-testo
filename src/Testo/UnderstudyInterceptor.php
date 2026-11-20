@@ -62,6 +62,13 @@ final readonly class UnderstudyInterceptor implements TestRunInterceptor
      */
     private const array COMPLETED = [Status::Passed, Status::Flaky, Status::Risky];
 
+    /**
+     * The adapter resets the context after every test, so a context that is
+     * not empty before a plain test starts was filled outside any test. The
+     * recipe is the one `understudy-phpunit` gives, in Testo's words.
+     */
+    private const string LEFTOVER_CONTEXT = 'The current execution context still holds understudies before this test started. A double created in a data provider or a #[BeforeClass] method lands here, and the context lives for one test — create the double inside the test that uses it instead.';
+
     public function __construct(
         private bool $strictStubs = false,
     ) {}
@@ -74,10 +81,23 @@ final readonly class UnderstudyInterceptor implements TestRunInterceptor
     #[\Override]
     public function runTest(TestInfo $info, callable $next): TestResult
     {
+        $plain = $info->identity->type === TestType::Test->value;
+
         try {
+            // Running the body over a filled context would let this test verify
+            // doubles it never made, and leave the next test that touches them
+            // a bare `ForgottenDouble`. Refuse it here, with the recipe.
+            if ($plain && !Understudy::idle()) {
+                return new TestResult(
+                    info: $info,
+                    status: Status::Failed,
+                    failure: new \LogicException(self::LEFTOVER_CONTEXT),
+                );
+            }
+
             $result = $next($info);
 
-            return $info->identity->type === TestType::Test->value
+            return $plain
                 && \in_array($result->status, self::COMPLETED, strict: true)
                     ? $this->verify($result)
                     : $result;

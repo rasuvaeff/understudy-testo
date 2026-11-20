@@ -22,7 +22,13 @@ for you:
 - **original failure wins** — after a failing or skipped body nothing is
   verified, so the adapter can never mask the error that actually happened;
 - **reset always** — the context is dropped after every test, in `finally`.
-  One test can never leak a double, an expectation or a stub into the next.
+  One test can never leak a double, an expectation or a stub into the next;
+- **refuse a filled context** — a plain test that starts while the context
+  already holds doubles fails before its body runs. The reset after every test
+  means those doubles were built outside any test: in a data provider or a
+  `#[BeforeClass]` method. The context lives for one test, so build the double
+  inside the test that uses it — a `#[BeforeTest]` method is part of the test
+  and is fine.
 
 **The reset runs after your `#[AfterTest]` teardown.** The interceptor's
 `finally` sits outside the lifecycle interceptor, and the call log retains
