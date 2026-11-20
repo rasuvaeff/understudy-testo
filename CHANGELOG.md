@@ -5,8 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 1.1.0 — 2026-11-20
 
+- **Changed.** A plain test that starts while the context already holds doubles now fails before its body runs, with a message naming the cause and the fix — the counterpart of the `#[Before]` guard in `understudy-phpunit` (#47). Such doubles were built outside any test: in a data provider (array or generator) or a `#[BeforeClass]` method. Before, the first test silently verified and dropped them, and the next test that touched one got a bare `ForgottenDouble`. **A suite that passed by accident turns red:** a generator data provider that builds a double per dataset was green before and is refused now — build the double in the test body or in `#[BeforeTest]`. Doubles built in the test class constructor are not caught (Testo constructs the case inside the test's pipeline); they still meet `ForgottenDouble` in the second test.
 - Mutation testing now counts code the tests execute but do not name in `#[Covers]` (`infection --with-uncovered`); the `PublicVisibility` mutator is off and default values in parameter lists are ignored. No `src/` changes.
 
 ## 1.0.0 — 2026-09-27

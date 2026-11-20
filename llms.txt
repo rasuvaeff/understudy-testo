@@ -17,6 +17,7 @@ composer require --dev rasuvaeff/understudy-testo
 - A test whose only check is an understudy expectation is not left `Risky`: the adapter takes that verdict back when its record is the only one in the history.
 - After a FAILING/SKIPPED body nothing is verified — the original failure is never masked.
 - The context is reset after EVERY test (`finally`); doubles never leak between tests.
+- A plain test that STARTS over a non-empty context fails before its body runs (`LogicException`, "still holds understudies before this test started"): the doubles were built outside any test — a data provider (array or generator) or a `#[BeforeClass]` method. Build doubles in the test body or in `#[BeforeTest]`, which runs inside the test.
 - Verification adds exactly ONE to the `assertions` metric and appends one record to the collected `TestState`.
 - That record is absent from the printed `assert-history` block: the collector renders it before this adapter runs.
 - Doubles must be created in plain tests: `#[TestInline]` cases and benchmarks are never VERIFIED (nothing there is checked at the end).

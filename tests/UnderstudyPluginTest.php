@@ -436,6 +436,51 @@ final class UnderstudyPluginTest
         Assert::true(Understudy::idle());
     }
 
+    /**
+     * A plain test that starts over a filled context is refused before its
+     * body runs: the doubles were built outside any test, and running the
+     * body would make this test answer for them.
+     */
+    public function aPlainTestOverAFilledContextIsRefusedBeforeTheBody(): void
+    {
+        $interceptor = new UnderstudyInterceptor();
+        Understudy::for(CollectorContract::class);
+        $ran = false;
+        $next = static function (TestInfo $info) use (&$ran): TestResult {
+            $ran = true;
+
+            return new TestResult(info: $info, status: Status::Passed);
+        };
+
+        $result = $interceptor->runTest($this->info(), $next);
+
+        Assert::false($ran);
+        Assert::same($result->status, Status::Failed);
+        Assert::instanceOf($result->failure, \LogicException::class);
+        Assert::same(
+            $result->failure?->getMessage(),
+            'The current execution context still holds understudies before this test started. A double created in a data provider or a #[BeforeClass] method lands here, and the context lives for one test — create the double inside the test that uses it instead.',
+        );
+        Assert::true(Understudy::idle());
+    }
+
+    /**
+     * The guard is scoped like verification: a type that is not a plain test
+     * runs its body over whatever is there, and is reset afterwards.
+     */
+    #[DataProvider('unverifiedTypeProvider')]
+    public function aTypeThatIsNotAPlainTestIsNotRefused(string $type): void
+    {
+        $interceptor = new UnderstudyInterceptor();
+        Understudy::for(CollectorContract::class);
+        $next = static fn(TestInfo $info): TestResult => new TestResult(info: $info, status: Status::Passed);
+
+        $result = $interceptor->runTest($this->info($type), $next);
+
+        Assert::same($result->status, Status::Passed);
+        Assert::true(Understudy::idle());
+    }
+
     private function info(string $type = 'test'): TestInfo
     {
         return new TestInfo(

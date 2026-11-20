@@ -141,6 +141,30 @@ final class UnderstudyTestoLifecycleIntegrationTest
     }
 
     /**
+     * A double built outside the test that uses it is refused before the
+     * body runs, with the recipe — a data provider, eager or lazy, and a
+     * `#[BeforeClass]` method alike. A `#[BeforeTest]` double is the test's
+     * own and is verified as usual.
+     */
+    public function aDoubleBuiltOutsideTheTestIsRefusedBeforeTheBody(): void
+    {
+        [$exit, $output] = $this->runFixture('OutsideTest');
+
+        Assert::same($exit, 1);
+        Assert::string($output)
+            // Two bodies ran: the idle check and the `#[BeforeTest]` test,
+            // whose verification is the second assertion.
+            ->contains('Total   6 tests · 2 assertions')
+            ->contains('2 passed, 3 failed, 1 error')
+            ->contains('still holds understudies before this test started');
+        // The array provider built the second dataset's double before the
+        // first dataset ran; the refusal's reset dropped it, so that dataset
+        // meets the engine's own error rather than a second refusal.
+        Assert::same(substr_count($output, 'ForgottenDouble: This understudy'), 1);
+        Assert::false(str_contains($output, 'open(3)'));
+    }
+
+    /**
      * Filtering changes which tests run, not what happens around them.
      */
     public function aFilteredRunStillVerifies(): void

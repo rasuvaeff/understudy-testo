@@ -25,7 +25,7 @@ in this file, the READMEs and the lifecycle table below.
 2. **No suppressions.** No `@psalm-suppress`, no baseline. Fix the root cause.
 3. **The adapter adds no operations and no state.** Every doubling operation
    belongs to the core facade; the interceptor may only call
-   `Understudy::verifyAll()` and `Understudy::reset()`, read nothing internal,
+   `Understudy::idle()`, `Understudy::verifyAll()` and `Understudy::reset()`, read nothing internal,
    and keep no mutable fields. A change that grows either list is a design
    decision to be made in the core package first.
 4. **Preserve the public contract.** Update README + tests with any API change.
@@ -69,7 +69,16 @@ make release-check
   with it.
 - **The lifecycle table is the contract.** A body that completed
   (`Passed`, `Flaky`, `Risky`) → verify; failed/error/skipped → pass through
-  untouched; always reset in `finally`.
+  untouched; always reset in `finally`. Before any of that, a plain test that
+  starts over a non-empty context is refused (`Failed`, body not run) — the
+  counterpart of `understudy-phpunit`'s `#[Before]` guard.
+- **What the guard catches is decided by pipeline position.** Data providers
+  and `#[BeforeClass]` run before this interceptor, so their doubles are
+  refused. `#[BeforeTest]` and the case constructor run inside `$next` (the
+  lifecycle interceptor is innermost), so they are not: a `#[BeforeTest]`
+  double is the test's own, and a constructor-built double is verified by the
+  first test and meets the engine's `ForgottenDouble` in the second. Proven by
+  the `OutsideTest` fixture; do not document the constructor as caught.
 - **`Risky` and `Flaky` are completed bodies, and forgetting that was a hole
   you could drive a suite through.** Verifying only `Status::Passed` meant an
   unmet `expect()` was never checked in exactly the tests that lean on
