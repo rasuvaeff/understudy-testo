@@ -10,6 +10,10 @@ use Rasuvaeff\Understudy\Exception\VerificationFailed;
 use Rasuvaeff\Understudy\Testo\Tests\Support\CollectedResult;
 use Rasuvaeff\Understudy\Testo\Tests\Support\CollectingCollector;
 use Rasuvaeff\Understudy\Testo\Tests\Support\CollectorContract;
+use Rasuvaeff\Understudy\Testo\Tests\Support\LenientCase;
+use Rasuvaeff\Understudy\Testo\Tests\Support\PlainCase;
+use Rasuvaeff\Understudy\Testo\Tests\Support\StrictCase;
+use Rasuvaeff\Understudy\Testo\Tests\Support\StrictChildCase;
 use Rasuvaeff\Understudy\Testo\UnderstudyInterceptor;
 use Rasuvaeff\Understudy\Testo\UnderstudyPlugin;
 use Rasuvaeff\Understudy\Understudy;
@@ -479,6 +483,64 @@ final class UnderstudyPluginTest
 
         Assert::same($result->status, Status::Passed);
         Assert::true(Understudy::idle());
+    }
+
+    /**
+     * `#[StrictStubs]` on the test method or class decides over the suite's
+     * setting: the method wins over its class, the class over the suite.
+     *
+     * @param class-string|null $case
+     */
+    #[DataProvider('strictStubsAttributeProvider')]
+    public function strictStubsAttributeOverridesTheSuiteSetting(
+        ?string $case,
+        \ReflectionFunctionAbstract $test,
+        bool $suite,
+        Status $expected,
+    ): void {
+        $interceptor = new UnderstudyInterceptor(strictStubs: $suite);
+        $next = static function (TestInfo $info): TestResult {
+            $double = Understudy::for(CollectorContract::class);
+
+            when(static fn() => $double->get())->returns(7);
+
+            return new TestResult(info: $info, status: Status::Passed);
+        };
+
+        $info = new TestInfo(
+            name: $test->getName(),
+            caseInfo: new CaseInfo(
+                definition: new CaseDefinition(
+                    name: $case,
+                    type: 'test',
+                    file: Path::create(__FILE__),
+                    reflection: $case === null ? null : new \ReflectionClass($case),
+                ),
+                suiteIdentity: new SuiteIdentity('Unit'),
+            ),
+            testDefinition: new TestDefinition(reflection: $test),
+        );
+
+        $result = $interceptor->runTest($info, $next);
+
+        Assert::same($result->status, $expected);
+    }
+
+    public static function strictStubsAttributeProvider(): iterable
+    {
+        $function = new \ReflectionFunction(static function (): void {});
+
+        yield 'no attribute keeps the lenient default' => [PlainCase::class, new \ReflectionMethod(PlainCase::class, 'plain'), false, Status::Passed];
+        yield 'no attribute keeps the strict suite' => [PlainCase::class, new \ReflectionMethod(PlainCase::class, 'plain'), true, Status::Failed];
+        yield 'class on over a lenient suite' => [StrictCase::class, new \ReflectionMethod(StrictCase::class, 'plain'), false, Status::Failed];
+        yield 'class off over a strict suite' => [LenientCase::class, new \ReflectionMethod(LenientCase::class, 'plain'), true, Status::Passed];
+        yield 'method on over a lenient suite' => [PlainCase::class, new \ReflectionMethod(PlainCase::class, 'strict'), false, Status::Failed];
+        yield 'method off wins over class on' => [StrictCase::class, new \ReflectionMethod(StrictCase::class, 'lenient'), false, Status::Passed];
+        yield 'method on wins over class off' => [LenientCase::class, new \ReflectionMethod(LenientCase::class, 'strict'), false, Status::Failed];
+        yield 'the running case class, not the declaring one' => [StrictChildCase::class, new \ReflectionMethod(PlainCase::class, 'plain'), false, Status::Failed];
+        yield 'no case reflection falls back to the method class' => [null, new \ReflectionMethod(StrictCase::class, 'plain'), false, Status::Failed];
+        yield 'a function test keeps the lenient suite' => [null, $function, false, Status::Passed];
+        yield 'a function test keeps the strict suite' => [null, $function, true, Status::Failed];
     }
 
     private function info(string $type = 'test'): TestInfo

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rasuvaeff\Understudy\Testo;
 
 use Rasuvaeff\Understudy\Exception\VerificationFailed;
+use Rasuvaeff\Understudy\StrictStubs;
 use Rasuvaeff\Understudy\Understudy;
 use Testo\Assert\State\Assertion\AssertionException;
 use Testo\Assert\State\Assertion\AssertionSuccess;
@@ -69,6 +70,10 @@ final readonly class UnderstudyInterceptor implements TestRunInterceptor
      */
     private const string LEFTOVER_CONTEXT = 'The current execution context still holds understudies before this test started. A double created in a data provider or a #[BeforeClass] method lands here, and the context lives for one test — create the double inside the test that uses it instead.';
 
+    /**
+     * @param bool $strictStubs the suite's own setting; `#[StrictStubs]` on the
+     *                          test class or method overrides it
+     */
     public function __construct(
         private bool $strictStubs = false,
     ) {}
@@ -120,7 +125,7 @@ final readonly class UnderstudyInterceptor implements TestRunInterceptor
         }
 
         try {
-            Understudy::verifyAll($this->strictStubs);
+            Understudy::verifyAll($this->strictStubsFor($result->info));
         } catch (VerificationFailed $failure) {
             return $this->record($result, new AssertionException(
                 value: 'understudy',
@@ -136,6 +141,30 @@ final readonly class UnderstudyInterceptor implements TestRunInterceptor
             assertion: 'expectations verified',
             context: '',
         )));
+    }
+
+    /**
+     * Whether strict stubs apply to this test: `#[StrictStubs]` on the method,
+     * else on the nearest class of the case, else the suite's setting.
+     *
+     * The case class comes first: an inherited test method is declared on a
+     * parent, yet the attribute of the class running it must still apply. A
+     * free-function test has no class and no place for the attribute, so it
+     * keeps the suite's setting.
+     */
+    private function strictStubsFor(TestInfo $info): bool
+    {
+        $test = $info->testDefinition->reflection;
+
+        if (!$test instanceof \ReflectionMethod) {
+            return $this->strictStubs;
+        }
+
+        return StrictStubs::resolve(
+            class: $info->caseInfo->definition->reflection?->getName() ?? $test->class,
+            method: $test->name,
+            default: $this->strictStubs,
+        );
     }
 
     /**

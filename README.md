@@ -54,7 +54,7 @@ ends, so an inline case cannot hand a leftover to the test after it.
 ## Requirements
 
 - PHP 8.3 – 8.5
-- `rasuvaeff/understudy` ^1.0
+- `rasuvaeff/understudy` ^1.2
 - `testo/testo` (`^0.10.42`)
 - `testo/assert` (`^0.1.13`)
 
@@ -145,6 +145,25 @@ form of it: `Understudy::strict($double)` is strict **dispatch** — "fail on an
 call no expectation matched" — and says nothing about a stub that was
 configured and never called. The per-double equivalent of strict stubs is
 `when(…)->times(n)`, which fails when the count is not met.
+
+The suite setting can be overridden for one test class or one test method with
+the `#[StrictStubs]` attribute of the engine (`rasuvaeff/understudy` 1.2+):
+
+```php
+use Rasuvaeff\Understudy\StrictStubs;
+
+#[StrictStubs]
+final class CheckoutTest
+{
+    #[StrictStubs(false)]
+    public function legacyPath(): void {}
+}
+```
+
+The method wins over its class, the class running the test over its parents,
+and any attribute over `strictStubs:` of the plugin. Without the attribute the
+plugin setting applies unchanged. A free-function test has no place for the
+attribute and keeps the suite setting.
 
 ## What gets recorded
 
