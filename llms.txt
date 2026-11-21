@@ -25,6 +25,8 @@ composer require --dev rasuvaeff/understudy-testo
 - `new UnderstudyPlugin(strictStubs: true)` additionally fails tests with unused stubs. Default: false.
   There is NO per-double form: `Understudy::strict($double)` is strict DISPATCH ("fail on any call no
   expectation matched"), not strict stubs. The per-double equivalent is `when(...)->times(n)`.
+- Per class / per method: `#[Rasuvaeff\Understudy\StrictStubs]` or `#[StrictStubs(false)]` (core ^1.2) on the test class or method. Precedence: method > class running the test > its parents >
+  plugin `strictStubs:`. No attribute = plugin setting unchanged. Free-function tests keep the plugin setting.
 - A test that created no double is left alone: nothing is recorded for it, its assertion count is its
   own, and a `Risky` verdict of the runner's stands.
 - Verification runs AFTER your teardown here and BEFORE it under `-phpunit`

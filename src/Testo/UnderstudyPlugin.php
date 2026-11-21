@@ -23,6 +23,9 @@ use Testo\Pipeline\InterceptorCollector;
  * ```
  *
  * With `strictStubs: true` a stub that was never called fails its test too.
+ * `#[StrictStubs]` / `#[StrictStubs(false)]` from `rasuvaeff/understudy` on a
+ * test class or method overrides the suite's setting there: the method wins
+ * over its class, the class over this setting.
  *
  * @api
  */
