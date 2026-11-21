@@ -23,7 +23,7 @@
         "source": "https://github.com/rasuvaeff/understudy-testo"
     },
     "require": {
-        "php": "8.3 - 8.5",
+        "php": "8.3 - 8.6",
         "internal/container": "^1.0",
         "rasuvaeff/understudy": "^1.2",
         "testo/assert": "^0.1.13",
